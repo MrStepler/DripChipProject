@@ -7,8 +7,10 @@ namespace DripChipProject.Models
     {
         [Key]
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
-        public long id { get; set; }
-        public double latitude { get; set; }
-        public double longitude { get; set; }
+        public long Id { get; set; }
+        [Required]
+        public double Latitude { get; set; }
+        [Required]
+        public double Longitude { get; set; }
     }
 }

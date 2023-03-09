@@ -4,31 +4,33 @@ namespace DripChipProject.Models
 {
     public class Animal
     {
-        [Key]
-        [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
-        public long id { get; set; }
-        public virtual ICollection<AnimalType> animalTypes { get; set; }
-        public float weight { get; set; }
-        public float lenght { get; set; }
-        public float height { get; set; }
-        public Gender gender { get; set; } 
-        public enum Gender
+        public enum lifeStatus
         {
-            MAN, 
-            FEMALE, 
-            OTHER
-        }
-        public LifeStatus lifeStatus { get; set; }
-        public enum LifeStatus 
-        { 
             ALIVE,
             DEATH
-        } 
-        public DateTime chippingDateTime { get; set; }
+        }
+        public enum gender
+        {
+            MAN,
+            FEMALE,
+            OTHER
+        }
+        [Key]
+        [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
+        public long Id { get; set; }
+        [NotMapped]
+        public long[] AnimalTypes { get; set; }
+        public float Weight { get; set; }
+        public float Lenght { get; set; }
+        public float Height { get; set; }
+        public gender Gender { get; set; } 
+        public lifeStatus LifeStatus { get; set; } = lifeStatus.ALIVE;
+        public DateTime ChippingDateTime { get; set; }
         [ForeignKey("Account")]
-        public int chipperId { get; set; }
-        public long chippingLocationId { get; set; }
-        public virtual ICollection<AnimalVisitedLocation> visitedLocations { get; set; } = null!;
-        public DateTime? deathDateTime { get; set; } = null;
+        public int ChipperId { get; set; }
+        public long ChippingLocationId { get; set; }
+        [NotMapped]
+        public long[] VisitedLocations { get; set; } 
+        public DateTime? DeathDateTime { get; set; } = null;
     }
 }

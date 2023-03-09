@@ -8,13 +8,15 @@ namespace DripChipProject.Models
     {
         [Key]
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
-        public int id { get; set; }
-
-        public string firstName { get; set; }
-        public string lastName { get; set; }
-
-        public string email { get; set; }
-        public string password { get; set; }
+        public int Id { get; set; }
+        [Required]
+        public string FirstName { get; set; }
+        [Required]
+        public string LastName { get; set; }
+        [Required]
+        public string Email { get; set; }
+        [Required]
+        public string Password { get; set; }
 
     }
 }

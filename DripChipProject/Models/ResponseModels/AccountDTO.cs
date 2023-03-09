@@ -11,10 +11,10 @@ namespace DripChipProject.Models.ResponseModels
         public string email { get; set; }
         public AccountDTO(Account account) 
         {
-            id= account.id;
-            lastName= account.lastName;
-            firstName= account.firstName;
-            email= account.email;
+            id= account.Id;
+            lastName= account.LastName;
+            firstName= account.FirstName;
+            email= account.Email;
         } 
     }
 }

@@ -7,9 +7,12 @@ namespace DripChipProject.Models
     {
         [Key]
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
-        public long id { get; set; }
-        public DateTime dateTimeOfVisitLocationPoint { get; set; }
-        public long locationPointId { get; set; }
+        public long Id { get; set; }
+
+        [Required]
+        public DateTime DateTimeOfVisitLocationPoint { get; set; }
+        [Required]
+        public long LocationPointId { get; set; }
         public virtual Animal Animal { get; set; } = null!;
     }
 }

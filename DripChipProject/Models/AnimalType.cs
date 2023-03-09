@@ -7,8 +7,9 @@ namespace DripChipProject.Models
     {
         [Key]
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
-        public long id { get; set; }
-        public string type { get; set; } = null!;
+        public long Id { get; set; }
+        [Required]
+        public string Type { get; set; }
         public virtual Animal Animal { get; set;}
     }
 }

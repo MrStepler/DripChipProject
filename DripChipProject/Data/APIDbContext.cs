@@ -22,15 +22,15 @@ namespace DripChipProject.Data
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             modelBuilder.Entity<Account>()
-            .HasKey(p => new { p.id });
+            .HasKey(p => new { p.Id });
             modelBuilder.Entity<Animal>()
-            .HasKey(p => new { p.id });
+            .HasKey(p => new { p.Id });
             modelBuilder.Entity<AnimalType>()
-            .HasKey(p => new { p.id });
+            .HasKey(p => new { p.Id });
             modelBuilder.Entity<AnimalLocation>()
-            .HasKey(p => new { p.id });
+            .HasKey(p => new { p.Id });
             modelBuilder.Entity<AnimalVisitedLocation>()
-            .HasKey(p => new { p.id });
+            .HasKey(p => new { p.Id });
         }
     }
 }

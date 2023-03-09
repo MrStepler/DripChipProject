@@ -18,10 +18,10 @@ namespace DripChipProject.Services
         {
             using var dbContext = contextFactory.CreateDbContext();
             Account dbAccont = new Account();
-            dbAccont.firstName = account.firstName;
-            dbAccont.lastName = account.lastName;
-            dbAccont.email = account.email;
-            dbAccont.password = account.password;
+            dbAccont.FirstName = account.firstName;
+            dbAccont.LastName = account.lastName;
+            dbAccont.Email = account.email;
+            dbAccont.Password = account.password;
             dbContext.Accounts.Add(dbAccont);
             dbContext.SaveChanges();
             AccountDTO acc = new AccountDTO(dbAccont);
@@ -31,7 +31,7 @@ namespace DripChipProject.Services
         public void DeleteAccount(int id) // Доработать
         {
             using var dbContext = contextFactory.CreateDbContext();
-            var accountToDeleting = dbContext.Accounts.First(x =>x.id == id);
+            var accountToDeleting = dbContext.Accounts.First(x =>x.Id == id);
             dbContext.Accounts.Remove(accountToDeleting);
             dbContext.SaveChanges();
         }
@@ -39,18 +39,18 @@ namespace DripChipProject.Services
         public AccountDTO? GetAccount(int id)
         {
             using var dbContext = contextFactory.CreateDbContext();
-            if (!dbContext.Accounts.Any(x => x.id == id))
+            if (!dbContext.Accounts.Any(x => x.Id == id))
             {
                 return null;
             }
-            AccountDTO account = new AccountDTO(dbContext.Accounts.First(x => x.id == id));
+            AccountDTO account = new AccountDTO(dbContext.Accounts.First(x => x.Id == id));
             return account;
         }
 
         public Account? GetAccountByEmail(string email)
         {
             using var dbContext = contextFactory.CreateDbContext();
-            return dbContext.Accounts.FirstOrDefault(x => x.email == email);
+            return dbContext.Accounts.FirstOrDefault(x => x.Email == email);
         }
 
         public AccountDTO[]? SearchAccounts(string? firstName, string? lastName, string? email, int from = 0, int size = 10)
@@ -59,21 +59,21 @@ namespace DripChipProject.Services
             var filteredResult = dbContext.Accounts.AsQueryable();
             if (firstName != null)
             {
-                filteredResult = filteredResult.Where(x =>x.firstName == firstName);
+                filteredResult = filteredResult.Where(x =>x.FirstName == firstName);
             }
             if (lastName != null)
             {
-                filteredResult = filteredResult.Where(x => x.lastName == lastName);
+                filteredResult = filteredResult.Where(x => x.LastName == lastName);
             }
             if (email != null)
             {
-                filteredResult = filteredResult.Where(x => x.email == email);
+                filteredResult = filteredResult.Where(x => x.Email == email);
             }
             if (filteredResult.Count() == 0)
             {
                 return null;
             }
-            filteredResult = filteredResult.OrderBy(x=> x.id).Skip(from).Take(size);
+            filteredResult = filteredResult.OrderBy(x=> x.Id).Skip(from).Take(size);
             List<AccountDTO> accList = new List<AccountDTO>();
             foreach(var account in filteredResult) 
             {
