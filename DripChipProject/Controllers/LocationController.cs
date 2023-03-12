@@ -12,7 +12,8 @@ namespace DripChipProject.Controllers
         {
             this.locationService = locationService;
         }
-        [HttpGet("{pointId:long}")]
+        [Route("locations/{pointId}")]
+        [HttpGet]
         public ActionResult<AnimalLocation> GetLocation(long? pointId)
         {
             if (pointId == null || pointId <= 0)

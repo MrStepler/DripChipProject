@@ -19,7 +19,8 @@ namespace DripChipProject.Models
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         public long Id { get; set; }
         [NotMapped]
-        public long[] AnimalTypes { get; set; }
+        [ForeignKey("AnimalType")]
+        public IQueryable<AnimalType> AnimalTypes { get; set; }
         public float Weight { get; set; }
         public float Lenght { get; set; }
         public float Height { get; set; }
@@ -30,7 +31,8 @@ namespace DripChipProject.Models
         public int ChipperId { get; set; }
         public long ChippingLocationId { get; set; }
         [NotMapped]
-        public long[] VisitedLocations { get; set; } 
+        [ForeignKey("AnimalVisitedLocation")]
+        public IQueryable<AnimalVisitedLocation> VisitedLocations { get; set; } 
         public DateTime? DeathDateTime { get; set; } = null;
     }
 }

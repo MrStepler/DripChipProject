@@ -28,12 +28,38 @@ namespace DripChipProject.Services
             return acc;
         }
 
+        public Account? Authenticate(string? email, string? password)
+        {
+            if (email == null && password == null)
+            {
+                Account guestAccount = new Account();
+                guestAccount.Email = "guest";
+                return guestAccount;
+            }
+            using var dbContext = contextFactory.CreateDbContext();
+            var account = dbContext.Accounts.SingleOrDefault(x => x.Email == email && x.Password == password);
+            return account;
+        }
+
         public void DeleteAccount(int id) // Доработать
         {
             using var dbContext = contextFactory.CreateDbContext();
             var accountToDeleting = dbContext.Accounts.First(x =>x.Id == id);
             dbContext.Accounts.Remove(accountToDeleting);
             dbContext.SaveChanges();
+        }
+
+        public AccountDTO EditAccount(int id, AccountRegistrationDTO account)
+        {
+            using var dbContext = contextFactory.CreateDbContext();
+            var accountToEdit = dbContext.Accounts.First(x => x.Id == id);
+            accountToEdit.FirstName = account.firstName;
+            accountToEdit.LastName = account.lastName;
+            accountToEdit.Email = account.email;
+            accountToEdit.Password = account.password;
+            dbContext.SaveChanges();
+            AccountDTO acc = new AccountDTO(dbContext.Accounts.First(x => x.Id == id));
+            return acc;
         }
 
         public AccountDTO? GetAccount(int id)
@@ -53,7 +79,7 @@ namespace DripChipProject.Services
             return dbContext.Accounts.FirstOrDefault(x => x.Email == email);
         }
 
-        public AccountDTO[]? SearchAccounts(string? firstName, string? lastName, string? email, int from = 0, int size = 10)
+        public AccountDTO[]? SearchAccounts(string? firstName, string? lastName, string? email, int from, int size)
         {
             using var dbContext = contextFactory.CreateDbContext() ;
             var filteredResult = dbContext.Accounts.AsQueryable();

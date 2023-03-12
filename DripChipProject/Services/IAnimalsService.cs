@@ -8,6 +8,7 @@ namespace DripChipProject.Services
     {
         Animal? GetAnimalById(long id);
         Animal[]? SearchAnimal(DateTime? startDateTime, DateTime? endDateTime, int? chipperId, long? chippingLocationId, lifeStatus? lifeStatus, gender? gender, int from, int size);
+        AnimalVisitedLocation[]? GetVisitedLocation(long animalId, DateTime? startDateTime, DateTime? endDateTime, int from, int size);
     }
 
 }

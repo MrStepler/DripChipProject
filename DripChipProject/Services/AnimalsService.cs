@@ -1,7 +1,9 @@
 ﻿using DripChipProject.Data;
 using DripChipProject.Models;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Internal;
+using System.Linq;
 
 namespace DripChipProject.Services
 {
@@ -18,7 +20,7 @@ namespace DripChipProject.Services
             return dbContext.Animals.FirstOrDefault(a => a.Id == id);
         }
 
-        public Animal[]? SearchAnimal(DateTime? startDateTime, DateTime? endDateTime, int? chipperId, long? chippingLocationId, Animal.lifeStatus? lifeStatus, Animal.gender? gender, int from = 0, int size = 10)
+        public Animal[]? SearchAnimal(DateTime? startDateTime, DateTime? endDateTime, int? chipperId, long? chippingLocationId, Animal.lifeStatus? lifeStatus, Animal.gender? gender, int from, int size)
         {
             var dbContext = contextFactory.CreateDbContext();
             var searchedAnimals = dbContext.Animals.AsQueryable();
@@ -52,6 +54,21 @@ namespace DripChipProject.Services
             }
             
             return searchedAnimals.OrderBy(x => x.Id).Skip(from).Take(size).ToArray();
+        }
+        public AnimalVisitedLocation[]? GetVisitedLocation(long animalId, DateTime? startDateTime, DateTime? endDateTime, int from, int size)
+        {
+            var dbContext = contextFactory.CreateDbContext();
+            var LocationIndexes = dbContext.VisitedLocations.Where(x => x.Animal.Id == animalId);
+            if (startDateTime != null)
+            {
+                LocationIndexes = LocationIndexes.Where(x => x.DateTimeOfVisitLocationPoint > startDateTime);
+            }
+            if (endDateTime != null)
+            {
+                LocationIndexes = LocationIndexes.Where(x => x.DateTimeOfVisitLocationPoint < endDateTime);
+            }
+            return LocationIndexes.Skip(from).Take(size).ToArray();
+
         }
     }
 }
