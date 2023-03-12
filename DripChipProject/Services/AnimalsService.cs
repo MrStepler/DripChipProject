@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Internal;
 using System.Linq;
+using static Microsoft.EntityFrameworkCore.DbLoggerCategory;
 
 namespace DripChipProject.Services
 {
@@ -70,6 +71,18 @@ namespace DripChipProject.Services
             }
             return LocationIndexes.Skip(from).Take(size).ToArray();
 
+        }
+
+        public bool ExistAnimalWithType(long typeId)
+        {
+            var dbContext = contextFactory.CreateDbContext();
+            var animalsWithType = dbContext.AnimalTypes.Where(x => x.Id == typeId).Where(x =>x.Animal != null);
+
+            if (animalsWithType.Count() == 0)
+            {
+                return false;
+            }
+            return true;
         }
     }
 }

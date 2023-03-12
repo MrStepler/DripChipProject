@@ -13,10 +13,35 @@ namespace DripChipProject.Services
             this.contextFactory = contextFactory;
         }
 
+        public AnimalType AddType(string type)
+        {
+            using var dbContext = contextFactory.CreateDbContext();
+            AnimalType createdType = new AnimalType();
+            createdType.Type = type;
+            dbContext.AnimalTypes.Add(createdType);
+            dbContext.SaveChanges();
+            return createdType;
+        }
+
+        public AnimalType EditType(long id, string type)
+        {
+            using var dbContext = contextFactory.CreateDbContext();
+            var editableType = dbContext.AnimalTypes.Find(id);
+            editableType.Type = type;
+            dbContext.SaveChanges();
+            return editableType;
+        }
+
         public AnimalType? GetTypes(long id)
         {
-            var dbContext = contextFactory.CreateDbContext();
+            using var dbContext = contextFactory.CreateDbContext();
             return dbContext.AnimalTypes.FirstOrDefault(t => t.Id == id);
+        }
+
+        public AnimalType? GetTypes(string type)
+        {
+            using var dbContext = contextFactory.CreateDbContext();
+            return dbContext.AnimalTypes.FirstOrDefault(t => t.Type == type);
         }
     }
 }

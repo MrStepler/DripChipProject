@@ -1,5 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations.Schema;
 using System.ComponentModel.DataAnnotations;
+using System.Diagnostics.CodeAnalysis;
 
 namespace DripChipProject.Models
 {
@@ -15,6 +16,7 @@ namespace DripChipProject.Models
         public DateTime DateTimeOfVisitLocationPoint { get; set; }
         [Required]
         public long LocationPointId { get; set; }
-        public virtual Animal Animal { get; set; } = null!;
+        [AllowNull]
+        public virtual Animal? Animal { get; set; }
     }
 }

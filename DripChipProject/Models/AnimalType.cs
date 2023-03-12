@@ -1,5 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations.Schema;
 using System.ComponentModel.DataAnnotations;
+using System.Diagnostics.CodeAnalysis;
 
 namespace DripChipProject.Models
 {
@@ -10,6 +11,8 @@ namespace DripChipProject.Models
         public long Id { get; set; }
         [Required]
         public string Type { get; set; }
-        public virtual Animal Animal { get; set;}
+        [AllowNull]
+        public virtual Animal? Animal { get; set; }
+
     }
 }

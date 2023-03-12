@@ -20,7 +20,7 @@ namespace DripChipProject.Models
         public long Id { get; set; }
         [NotMapped]
         [ForeignKey("AnimalType")]
-        public IQueryable<AnimalType> AnimalTypes { get; set; }
+        public virtual IQueryable<AnimalType> AnimalTypes { get; set; }
         public float Weight { get; set; }
         public float Lenght { get; set; }
         public float Height { get; set; }
@@ -35,7 +35,7 @@ namespace DripChipProject.Models
         public long ChippingLocationId { get; set; }
         [NotMapped]
         [ForeignKey("AnimalVisitedLocation")]
-        public IQueryable<AnimalVisitedLocation> VisitedLocations { get; set; }
+        public virtual IQueryable<AnimalVisitedLocation> VisitedLocations { get; set; }
         [DataType(DataType.Date)]
         [DisplayFormat(DataFormatString = "{0:yyyy-MM-ddTHH:mm:ssZ}", ApplyFormatInEditMode = true)]
         public DateTime? DeathDateTime { get; set; } = null;
