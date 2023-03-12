@@ -26,13 +26,18 @@ namespace DripChipProject.Models
         public float Height { get; set; }
         public gender Gender { get; set; } 
         public lifeStatus LifeStatus { get; set; } = lifeStatus.ALIVE;
+        [Required]
+        [DataType(DataType.Date)]
+        [DisplayFormat(DataFormatString = "{0:yyyy-MM-ddTHH:mm:ssZ}", ApplyFormatInEditMode = true)]
         public DateTime ChippingDateTime { get; set; }
         [ForeignKey("Account")]
         public int ChipperId { get; set; }
         public long ChippingLocationId { get; set; }
         [NotMapped]
         [ForeignKey("AnimalVisitedLocation")]
-        public IQueryable<AnimalVisitedLocation> VisitedLocations { get; set; } 
+        public IQueryable<AnimalVisitedLocation> VisitedLocations { get; set; }
+        [DataType(DataType.Date)]
+        [DisplayFormat(DataFormatString = "{0:yyyy-MM-ddTHH:mm:ssZ}", ApplyFormatInEditMode = true)]
         public DateTime? DeathDateTime { get; set; } = null;
     }
 }

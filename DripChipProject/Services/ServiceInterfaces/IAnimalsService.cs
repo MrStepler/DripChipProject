@@ -2,7 +2,7 @@
 using static DripChipProject.Models.Animal;
 using System.Drawing;
 
-namespace DripChipProject.Services
+namespace DripChipProject.Services.ServiceInterfaces
 {
     public interface IAnimalsService
     {

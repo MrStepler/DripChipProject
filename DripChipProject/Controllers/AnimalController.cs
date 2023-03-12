@@ -1,5 +1,5 @@
 ﻿using DripChipProject.Models;
-using DripChipProject.Services;
+using DripChipProject.Services.ServiceInterfaces;
 using Microsoft.AspNetCore.Mvc;
 using static DripChipProject.Models.Animal;
 

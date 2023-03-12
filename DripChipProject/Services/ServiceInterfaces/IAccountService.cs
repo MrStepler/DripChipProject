@@ -1,8 +1,8 @@
 ﻿using DripChipProject.Models;
 using DripChipProject.Data;
-using DripChipProject.Models.ResponseModels;
+using DripChipProject.Models.ResponseModels.Account;
 
-namespace DripChipProject.Services
+namespace DripChipProject.Services.ServiceInterfaces
 {
     public interface IAccountService
     {

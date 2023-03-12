@@ -10,6 +10,8 @@ namespace DripChipProject.Models
         public long Id { get; set; }
 
         [Required]
+        [DataType(DataType.Date)]
+        [DisplayFormat(DataFormatString = "{0:yyyy-MM-ddTHH:mm:ssZ}", ApplyFormatInEditMode = true)]
         public DateTime DateTimeOfVisitLocationPoint { get; set; }
         [Required]
         public long LocationPointId { get; set; }

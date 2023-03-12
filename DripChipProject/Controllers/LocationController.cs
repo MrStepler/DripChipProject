@@ -1,9 +1,13 @@
 ﻿using DripChipProject.Models;
-using DripChipProject.Services;
+using DripChipProject.Models.ResponseModels.Locations;
+using DripChipProject.Services.ServiceInterfaces;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using System.Reflection.Metadata.Ecma335;
 
 namespace DripChipProject.Controllers
 {
+    [Authorize]
     [ApiController]
     public class LocationController : Controller
     {
@@ -13,7 +17,7 @@ namespace DripChipProject.Controllers
             this.locationService = locationService;
         }
         [Route("locations/{pointId}")]
-        [HttpGet]
+        [HttpGet] //Ready
         public ActionResult<AnimalLocation> GetLocation(long? pointId)
         {
             if (pointId == null || pointId <= 0)
@@ -25,6 +29,90 @@ namespace DripChipProject.Controllers
                 return StatusCode(404);
             }
             return Ok(locationService.GetLocation((long)pointId));
+        }
+        [Route("locations")]
+        [HttpPost]//Ready
+        public ActionResult<AnimalLocation> AddLocation([FromBody] EditCreateLocation? location)
+        {
+            if (HttpContext.User.Identity.Name == "guest")
+            {
+                return StatusCode(401);
+            }
+            if (location.Latitude == null || location.Longitude == null)
+            {
+                return StatusCode(400);
+            }
+            if (!IsValidLocation(location))
+            {
+                return StatusCode(400);
+            }
+            if (locationService.GetLocation(location) != null)
+            {
+                return StatusCode(409);
+            }
+            return Created("", locationService.AddLocation(location));
+        }
+        [Route("locations/{pointId}")]
+        [HttpPut] //Ready
+        public ActionResult<AnimalLocation> EditLocation(long? pointId, [FromBody] EditCreateLocation? location)
+        {
+            if (HttpContext.User.Identity.Name == "guest")
+            {
+                return StatusCode(401);
+            }
+            if (pointId == null || pointId <= 0)
+            {
+                return StatusCode(400);
+            }
+            if (location.Latitude == null || location.Longitude == null)
+            {
+                return StatusCode(400);
+            }
+            if (!IsValidLocation(location))
+            {
+                return StatusCode(400);
+            }
+            if (locationService.GetLocation(location) != null)
+            {
+                return StatusCode(409);
+            }
+            if (locationService.GetLocation((long)pointId) == null)
+            {
+                return StatusCode(404);
+            }
+
+            return Ok(locationService.EditLocation((long)pointId, location));
+        }
+        [Route("locations/{pointId}")]
+        [HttpDelete]
+        public ActionResult<AnimalLocation> DeleteLocation(long? pointId)
+        {
+            if (HttpContext.User.Identity.Name == "guest")
+            {
+                return StatusCode(401);
+            }
+            if (pointId == null || pointId <= 0) //Связка с животным????????????????
+            {
+                return StatusCode(400);
+            }
+            if (locationService.GetLocation((long)pointId) == null)
+            {
+                return StatusCode(404);
+            }
+            locationService.DeleteLocation((long)pointId);
+            return Ok();
+        }
+        private bool IsValidLocation(EditCreateLocation location)
+        {
+            if (location.Latitude > 90 || location.Latitude < -90)
+            {
+                return false;
+            }
+            if (location.Longitude > 180 || location.Longitude < -180)
+            {
+                return false;
+            }
+            return true;
         }
     }
 }

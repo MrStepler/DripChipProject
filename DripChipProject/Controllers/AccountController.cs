@@ -1,11 +1,11 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using DripChipProject.Services;
 using DripChipProject.Models;
-using DripChipProject.Models.ResponseModels;
 using System.Text.RegularExpressions;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Authentication;
 using System.Security.Principal;
+using DripChipProject.Services.ServiceInterfaces;
+using DripChipProject.Models.ResponseModels.Account;
 
 namespace DripChipProject.Controllers
 {
@@ -22,7 +22,7 @@ namespace DripChipProject.Controllers
         }
         [Route("accounts/{id}")]
         [HttpGet]
-        public IActionResult GetAccountById(int? id)
+        public IActionResult GetAccountById(int? id) //Ready
         {
 
             if (id <= 0 || id == null)
@@ -36,7 +36,7 @@ namespace DripChipProject.Controllers
             return Ok(accountService.GetAccount((int)id));
         }
         [Route("accounts/search")]
-        [HttpGet]
+        [HttpGet] //Ready
         public IActionResult SearchAccount([FromQuery] string? firstName, [FromQuery] string? lastName, [FromQuery] string? email, [FromQuery] int from = 0, [FromQuery] int size = 10)
         {
             if (from < 0)
@@ -51,7 +51,7 @@ namespace DripChipProject.Controllers
         }
         [Route("accounts/register")]
         [HttpPost]
-        public IActionResult RegisterAccount(AccountRegistrationDTO account)
+        public IActionResult RegisterAccount(AccountRegistrationDTO account) //Ready
         {
             if (HttpContext.User.Identity.Name != "guest")
             {
@@ -85,7 +85,7 @@ namespace DripChipProject.Controllers
             {
                 return StatusCode(403);
             }
-            if (accountService.GetAccountByEmail(account.email) != null)
+            if (accountService.GetAccountByEmail(account.email) != null) //????????????????
             {
                 return StatusCode(409);
             }
@@ -108,7 +108,7 @@ namespace DripChipProject.Controllers
             {
                 return StatusCode(400);
             }
-            if (animalsService.SearchAnimal(null,null,chipperId:id, null, null, null,0,10) != null)
+            if (animalsService.SearchAnimal(null,null,chipperId:id, null, null, null,0,10) != null) //check
             {
                 return StatusCode(400);
             }
@@ -116,7 +116,7 @@ namespace DripChipProject.Controllers
             {
                 return StatusCode(403);
             }
-            if (accountService.GetAccount((int)id) == null)
+            if (accountService.GetAccount((int)id) == null) //?????????
             {
                 return StatusCode(403);
             }

@@ -1,6 +1,4 @@
-﻿using DripChipProject.Models;
-
-namespace DripChipProject.Models.ResponseModels
+﻿namespace DripChipProject.Models.ResponseModels.Account
 {
     public class AccountRegistrationDTO
     {

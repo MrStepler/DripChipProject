@@ -3,6 +3,7 @@ using DripChipProject.Data;
 using DripChipProject.Services;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.OpenApi.Models;
+using DripChipProject.Services.ServiceInterfaces;
 
 var builder = WebApplication.CreateBuilder(args);
 

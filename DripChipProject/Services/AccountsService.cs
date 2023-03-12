@@ -2,7 +2,8 @@
 using DripChipProject.Data;
 using Microsoft.EntityFrameworkCore;
 using System.Linq;
-using DripChipProject.Models.ResponseModels;
+using DripChipProject.Services.ServiceInterfaces;
+using DripChipProject.Models.ResponseModels.Account;
 
 namespace DripChipProject.Services
 {
