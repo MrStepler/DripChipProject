@@ -10,13 +10,16 @@ namespace DripChipProject.Models
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         public long Id { get; set; }
 
-        [Required]
         [DataType(DataType.Date)]
         [DisplayFormat(DataFormatString = "{0:yyyy-MM-ddTHH:mm:ssZ}", ApplyFormatInEditMode = true)]
         public DateTime DateTimeOfVisitLocationPoint { get; set; }
         [Required]
         public long LocationPointId { get; set; }
+
         [AllowNull]
-        public virtual Animal? Animal { get; set; }
+        public long? animalID { get; set; }
+        [ForeignKey("animalID")]
+        [AllowNull]
+        public Animal? Animal { get; set; }
     }
 }

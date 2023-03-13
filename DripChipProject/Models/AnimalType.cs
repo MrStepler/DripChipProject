@@ -12,7 +12,10 @@ namespace DripChipProject.Models
         [Required]
         public string Type { get; set; }
         [AllowNull]
-        public virtual Animal? Animal { get; set; }
+        public long? AnimalId { get; set; }
+        [ForeignKey("AnimalId")]
+        [AllowNull]
+        public Animal? Animal { get; set; }
 
     }
 }

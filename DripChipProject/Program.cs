@@ -13,6 +13,7 @@ builder.Services.AddScoped<IAccountService, AccountsService>();
 builder.Services.AddScoped<IAnimalsService, AnimalsService>();
 builder.Services.AddScoped<IAnimalTypesService, AnimalTypesService>();
 builder.Services.AddScoped<ILocationService, LocationService>();
+builder.Services.AddScoped<IVisitedLocationService, VisitedLocationService>();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 

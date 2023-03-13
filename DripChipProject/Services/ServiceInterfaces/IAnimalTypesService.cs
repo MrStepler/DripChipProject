@@ -8,5 +8,6 @@ namespace DripChipProject.Services.ServiceInterfaces
         AnimalType? GetTypes(string type);
         AnimalType AddType(string type);
         AnimalType EditType(long id, string type);
+        long[] GetTypesByAnimalId(long animalId);
     }
 }

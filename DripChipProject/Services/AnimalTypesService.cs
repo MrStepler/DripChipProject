@@ -37,7 +37,11 @@ namespace DripChipProject.Services
             using var dbContext = contextFactory.CreateDbContext();
             return dbContext.AnimalTypes.FirstOrDefault(t => t.Id == id);
         }
-
+        public long[] GetTypesByAnimalId(long animalId)
+        {
+            using var dbContext = contextFactory.CreateDbContext();
+            return dbContext.AnimalTypes.Where(t => t.AnimalId == animalId).Select(t => t.Id).ToArray();
+        }
         public AnimalType? GetTypes(string type)
         {
             using var dbContext = contextFactory.CreateDbContext();
