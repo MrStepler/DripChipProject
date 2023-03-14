@@ -2,6 +2,7 @@
 using System.ComponentModel.DataAnnotations;
 using System.Diagnostics.CodeAnalysis;
 using DripChipProject.Models;
+using System.Globalization;
 
 namespace DripChipProject.Models.ResponseModels.Animal
 {
@@ -47,10 +48,11 @@ namespace DripChipProject.Models.ResponseModels.Animal
             }
             if (animal.LifeStatus == Models.Animal.lifeStatus.DEATH)
             {
-                LifeStatus = "DEATH";
+                LifeStatus = "DEAD";
             }
             ChipperId= animal.ChipperId;
-            ChippingDateTime= animal.ChippingDateTime;
+            ChippingDateTime = animal.ChippingDateTime;
+            ChippingLocationId = animal.ChippingLocationId;
             DeathDateTime= animal.DeathDateTime;
 
         }

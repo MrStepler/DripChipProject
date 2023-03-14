@@ -25,7 +25,7 @@ namespace DripChipProject.Services
             return dbContext.Animals.FirstOrDefault(a => a.Id == id);
         }
 
-        public Animal[]? SearchAnimal(DateTime? startDateTime, DateTime? endDateTime, int? chipperId, long? chippingLocationId, Animal.lifeStatus? lifeStatus, Animal.gender? gender, int from, int size)
+        public Animal[]? SearchAnimal(DateTime? startDateTime, DateTime? endDateTime, int? chipperId, long? chippingLocationId, string? lifeStatus, string? gender, int from, int size)
         {
             var dbContext = contextFactory.CreateDbContext();
             var searchedAnimals = dbContext.Animals.AsQueryable();
@@ -47,11 +47,11 @@ namespace DripChipProject.Services
             }
             if (lifeStatus != null)
             {
-                searchedAnimals = searchedAnimals.Where(x => x.LifeStatus == lifeStatus);
+                searchedAnimals = searchedAnimals.Where(x => x.LifeStatus == LifeStatusConverter(lifeStatus));
             }
             if (gender != null)
             {
-                searchedAnimals = searchedAnimals.Where(x => x.Gender == gender);
+                searchedAnimals = searchedAnimals.Where(x => x.Gender == GenderConverter(gender));
             }
             if (searchedAnimals.Count() == 0)
             {
@@ -88,34 +88,19 @@ namespace DripChipProject.Services
             return true;
         }
 
-        public Animal ChipAnimal(CreateAnimal createdAnimal) // NOT READY YET
+        public Animal ChipAnimal(CreateAnimal createdAnimal) // MAYBE READY
         {
             using var dbContext = contextFactory.CreateDbContext();
             Animal animal = new Animal();
             animal.Weight = (float)createdAnimal.Weight;
             animal.Height = (float)createdAnimal.Height;
             animal.Lenght = (float)createdAnimal.Lenght;
-            if (createdAnimal.Gender == "FEMALE")
-            {
-                animal.Gender = Animal.gender.FEMALE;
-            }
-            if (createdAnimal.Gender == "MALE")
-            {
-                animal.Gender = Animal.gender.MALE;
-            }
-            if (createdAnimal.Gender == "OTHER")
-            {
-                animal.Gender = Animal.gender.OTHER;
-            }
+            animal.Gender = GenderConverter(createdAnimal.Gender);
             animal.ChipperId = (int)createdAnimal.ChipperId;
             animal.ChippingLocationId = (long)createdAnimal.ChippingLocationId;
             animal.LifeStatus = Animal.lifeStatus.ALIVE;
             animal.ChippingDateTime = DateTime.Now;
             animal.DeathDateTime = null;
-            AnimalVisitedLocation animalVisitedLocation = new AnimalVisitedLocation();
-            animalVisitedLocation.DateTimeOfVisitLocationPoint = DateTime.Now;
-            animalVisitedLocation.LocationPointId = animal.ChippingLocationId;
-            animalVisitedLocation.Animal = animal;
             animal.VisitedLocations = new List<AnimalVisitedLocation>();
             foreach (long typeAnimalInd in createdAnimal.AnimalTypes)
             {
@@ -123,10 +108,37 @@ namespace DripChipProject.Services
                 typeAnimal.Animal = animal;
             }
             animal.AnimalTypes = new List<AnimalType>();
-            dbContext.VisitedLocations.Add(animalVisitedLocation);
             dbContext.Animals.Add(animal);
             dbContext.SaveChanges();
             return animal;
+        }
+
+        private Animal.gender GenderConverter(string gernderString)
+        {
+            if (gernderString == "FEMALE")
+            {
+                return Animal.gender.FEMALE;
+            }
+            else if (gernderString == "MALE")
+            {
+                return Animal.gender.MALE;
+            }
+            else
+            {
+                return Animal.gender.OTHER;
+            }
+
+        }
+        private Animal.lifeStatus LifeStatusConverter(string lifeStatusString)
+        {
+            if (lifeStatusString == "ALIVE")
+            {
+                return Animal.lifeStatus.ALIVE;
+            }
+            else 
+            {
+                return Animal.lifeStatus.DEATH;
+            }
         }
     }
 }

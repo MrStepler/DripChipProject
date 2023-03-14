@@ -1,5 +1,6 @@
 ﻿using DripChipProject.Data;
 using DripChipProject.Models;
+using DripChipProject.Models.ResponseModels.AnimalType;
 using DripChipProject.Services.ServiceInterfaces;
 using Microsoft.EntityFrameworkCore;
 
@@ -32,7 +33,7 @@ namespace DripChipProject.Services
             return editableType;
         }
 
-        public AnimalType? GetTypes(long id)
+        public AnimalType? GetType(long id)
         {
             using var dbContext = contextFactory.CreateDbContext();
             return dbContext.AnimalTypes.FirstOrDefault(t => t.Id == id);
@@ -42,10 +43,48 @@ namespace DripChipProject.Services
             using var dbContext = contextFactory.CreateDbContext();
             return dbContext.AnimalTypes.Where(t => t.AnimalId == animalId).Select(t => t.Id).ToArray();
         }
-        public AnimalType? GetTypes(string type)
+        public List<AnimalType>? GetListTypesOfAnimal(long animalId)
+        {
+            using var dbContext = contextFactory.CreateDbContext();
+            if (!dbContext.AnimalTypes.Any(t => t.AnimalId == animalId))
+            {
+                return null;
+            }
+            return dbContext.AnimalTypes.Where(t => t.AnimalId == animalId).ToList();
+        }
+        public AnimalType? GetType(string type)
         {
             using var dbContext = contextFactory.CreateDbContext();
             return dbContext.AnimalTypes.FirstOrDefault(t => t.Type == type);
+        }
+        public Animal AddTypeToAnimal(long animalId, long typeId)
+        {
+            using var dbContext = contextFactory.CreateDbContext();
+            var addableType = dbContext.AnimalTypes.Find(typeId);
+            addableType.Animal = dbContext.Animals.Find(animalId);
+            dbContext.SaveChanges();
+            return dbContext.Animals.Find(animalId);
+        }
+        public Animal EditTypeOfAnimal(long animalId, SwitchableTypes switchableTypes)
+        {
+            using var dbContext = contextFactory.CreateDbContext();
+            var editableType = dbContext.AnimalTypes.Find(switchableTypes.OldTypeId);
+            editableType.Animal = null;
+            editableType.AnimalId = null;
+            dbContext.SaveChanges();
+            editableType = dbContext.AnimalTypes.Find(switchableTypes.NewTypeId);
+            editableType.Animal = dbContext.Animals.Find(animalId);
+            dbContext.SaveChanges();
+            return dbContext.Animals.Find(animalId);
+        }
+        public Animal DeleteTypeOfAnimal(long animalId, long typeId)
+        {
+            using var dbContext = contextFactory.CreateDbContext();
+            var deletableType = dbContext.AnimalTypes.First(x =>x.Id == typeId && x.AnimalId == animalId);
+            deletableType.Animal = null;
+            deletableType.AnimalId = null;
+            dbContext.SaveChanges();
+            return dbContext.Animals.First(x=>x.Id == animalId);
         }
     }
 }

@@ -97,7 +97,7 @@ namespace DripChipProject.Controllers
         }
 
         [Route("accounts/{id}")]
-        [HttpDelete]
+        [HttpDelete] //READY
         public IActionResult DeleteAccount(int? id) 
         {
             if (HttpContext.User.Identity.Name == "guest")
@@ -108,18 +108,19 @@ namespace DripChipProject.Controllers
             {
                 return StatusCode(400);
             }
-            if (animalsService.SearchAnimal(null,null,chipperId:id, null, null, null,0,10) != null) //check
+            if (animalsService.SearchAnimal(null,null,chipperId:id, null, null, null,0,10) != null) 
             {
                 return StatusCode(400);
+            }
+            if (accountService.GetAccount((int)id) == null) 
+            {
+                return StatusCode(403);
             }
             if (accountService.GetAccount((int)id).email != HttpContext.User.Identity.Name)
             {
                 return StatusCode(403);
             }
-            if (accountService.GetAccount((int)id) == null) //?????????
-            {
-                return StatusCode(403);
-            }
+            
             accountService.DeleteAccount((int)id);
             return Ok();
         }

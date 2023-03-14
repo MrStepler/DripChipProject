@@ -4,7 +4,11 @@ namespace DripChipProject.Services.ServiceInterfaces
 {
     public interface IVisitedLocationService
     {
-        AnimalVisitedLocation VisitVisitedLocation(long pointId);
-        long[] GetVisitedLocations(long animalId);
+        AnimalVisitedLocation VisitLocation(long animalId, long pointId);
+        long[]? GetVisitedLocationsIDs(long animalId);
+        AnimalVisitedLocation? GetVisitedLocationsById(long visitedPointId);
+        AnimalVisitedLocation EditVisitedLocation(long visitedPointId, long newPointId);
+        List<AnimalVisitedLocation>? GetListVisistedLocationsOfAnimal(long animalId);
+        void DeleteVisitedLocation(long animalId, long visitedPointId);
     }
 }

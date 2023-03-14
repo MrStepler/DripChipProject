@@ -1,10 +1,15 @@
 ﻿using DripChipProject.Models;
+using DripChipProject.Models.ResponseModels;
 using DripChipProject.Models.ResponseModels.Animal;
+using DripChipProject.Models.ResponseModels.AnimalType;
+using DripChipProject.Models.ResponseModels.Locations;
 using DripChipProject.Services;
 using DripChipProject.Services.ServiceInterfaces;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
+using System.Net;
+using System.Text.RegularExpressions;
 using System.Xml.Linq;
 using static DripChipProject.Models.Animal;
 
@@ -31,9 +36,12 @@ namespace DripChipProject.Controllers
             this.locationService = locationService;
             this.visitedLocationService = visitedLocationService;
         }
+        //=================================================================================================
+        // ANIMAL BLOCK
+        //=================================================================================================
         [Route("animals")]
         [HttpPost]
-        public ActionResult<AnimalDTO> ChipAnimal(CreateAnimal createdAnimal)
+        public ActionResult<AnimalDTO> ChipAnimal(CreateAnimal createdAnimal) //I mean ready
         {
             if (HttpContext.User.Identity.Name == "guest")
             {
@@ -49,7 +57,7 @@ namespace DripChipProject.Controllers
             }
             foreach (long typeId in createdAnimal.AnimalTypes)
             {
-                if (animalTypesService.GetTypes(typeId) == null)
+                if (animalTypesService.GetType(typeId) == null)
                 {
                     return StatusCode(404);
                 }
@@ -67,11 +75,46 @@ namespace DripChipProject.Controllers
                 return StatusCode(409);
             }
             AnimalDTO animalDTO = new AnimalDTO(animalService.ChipAnimal(createdAnimal));
-            animalDTO.VisitedLocations = visitedLocationService.GetVisitedLocations(animalDTO.Id);
+            animalDTO.VisitedLocations = visitedLocationService.GetVisitedLocationsIDs(animalDTO.Id);
             animalDTO.AnimalTypes = animalTypesService.GetTypesByAnimalId(animalDTO.Id); 
             return Created("", animalDTO);
         }
+        [Route("animals/search")]
+        [HttpGet]
+        public ActionResult<Animal> SearchAnimal([FromQuery] TimeInterval interval, [FromQuery] int? chipperId, [FromQuery] long? chippingLocationId, [FromQuery] string? lifeStatus, [FromQuery] string? gender, [FromQuery] int from = 0, [FromQuery] int size = 10)
+        {
 
+            if (from < 0)
+            {
+                return StatusCode(400);
+            }
+            if (size <= 0)
+            {
+                return StatusCode(400);
+            }
+            if (!ModelState.IsValid)
+            {
+                return StatusCode(400);
+            }
+            if (!VerifySearchinData(chipperId, chippingLocationId, gender, lifeStatus))
+            {
+                return StatusCode(400);
+            }
+
+            List<AnimalDTO> animals = new List<AnimalDTO>();
+            if (animalService.SearchAnimal(interval.startDateTime, interval.endDateTime, chipperId, chippingLocationId, lifeStatus, gender, from, size) != null)
+            {
+                foreach (Animal animal in animalService.SearchAnimal(interval.startDateTime, interval.endDateTime, chipperId, chippingLocationId, lifeStatus, gender, from, size))
+                {
+                    AnimalDTO animalDTO = new AnimalDTO(animal);
+                    animalDTO.VisitedLocations = visitedLocationService.GetVisitedLocationsIDs(animalDTO.Id);
+                    animalDTO.AnimalTypes = animalTypesService.GetTypesByAnimalId(animalDTO.Id);
+                    animals.Add(animalDTO); // Что то случилось с форматом ISO
+                }
+            }
+
+            return Ok(animals);
+        }
         private bool VerifyAddingAnimal(CreateAnimal createdAnimal)
         {
             if (createdAnimal.AnimalTypes == null || createdAnimal.AnimalTypes.Count() <= 0)
@@ -111,10 +154,43 @@ namespace DripChipProject.Controllers
             }
             return true;
         }
+        private bool VerifySearchinData(int? ChipperId, long? ChippingLocationId, string? Gender, string lifeStatus)
+        {
+            if (ChipperId != null)
+            {
+                if (ChipperId <= 0)
+                {
+                    return false;
+                }
+            }
+            if (ChippingLocationId != null)
+            {
+                if (ChippingLocationId <= 0)
+                {
+                    return false;
+                }
+            }
+            if (Gender != null)
+            {
+                if (Gender != "MALE" && Gender != "FEMALE" && Gender != "OTHER")
+                {
+                    return false;
+                }
+            }
+            if (lifeStatus != null)
+            {
+                if (lifeStatus != "ALIVE" && lifeStatus != "DEAD")
+                {
+                    return false;
+                }
+            }
+
+            return true;
+        }
 
         [Route("animals/{animalId}")]
         [HttpGet]
-        public IActionResult GetAnimal(long? animalId)
+        public ActionResult<AnimalDTO> GetAnimal(long? animalId)
         {
             if (animalId == null || animalId <= 0) 
             {
@@ -124,45 +200,156 @@ namespace DripChipProject.Controllers
             {
                 return StatusCode(404);
             }
-            return Ok(animalService.GetAnimalById((long)animalId));
+            AnimalDTO animalDTO = new AnimalDTO(animalService.GetAnimalById((long)animalId));
+            animalDTO.VisitedLocations = visitedLocationService.GetVisitedLocationsIDs(animalDTO.Id);
+            animalDTO.AnimalTypes = animalTypesService.GetTypesByAnimalId(animalDTO.Id);
+            return Ok(animalDTO);
            
         }
-        [Route("animals/search")]
-        [HttpGet]
-        public ActionResult<Animal> SearchAnimal([FromQuery] DateTime? startDateTime, [FromQuery] DateTime? endDateTime, [FromQuery] int? chipperId, [FromQuery] long? chippingLocationId, [FromQuery] lifeStatus? lifeStatus, [FromQuery] gender? gender, [FromQuery] int from = 0, [FromQuery] int size = 10) 
+        //=================================================================================================
+        // ANIMAL THAT HAVE TYPE BLOCK
+        //=================================================================================================
+        [Route("animals/{animalId}/types/{typeId}")]
+        [HttpPost] //READY
+        public ActionResult<AnimalDTO> AddTypeToAnimal(long? animalId, long? typeId)
         {
-            if (animalService.SearchAnimal(startDateTime, endDateTime, chipperId, chippingLocationId, lifeStatus, gender, from, size) == null)
+            if (HttpContext.User.Identity.Name == "guest")
             {
-                // return StatusCode(404);
+                return StatusCode(401);
             }
-            if (from < 0)
+            if (animalId == null || animalId <= 0)
             {
                 return StatusCode(400);
             }
-            if (size <= 0)
-            {
-                return StatusCode(400);
-            }
-            return Ok(animalService.SearchAnimal(startDateTime, endDateTime, chipperId, chippingLocationId, lifeStatus, gender, from, size));
-        }
-        [Route("animals/types/{typeId}")]
-        [HttpGet]
-        public ActionResult<AnimalType> GetAnimalType(long? typeId)
-        {
             if (typeId == null || typeId <= 0)
             {
                 return StatusCode(400);
             }
-            if (animalTypesService.GetTypes((long)typeId) == null)
+            if (animalService.GetAnimalById((long)animalId) == null)
             {
                 return StatusCode(404);
             }
-            return Ok(animalTypesService.GetTypes((long)typeId));
+            if (animalTypesService.GetType((long)typeId) == null)
+            {
+                return StatusCode(404);
+            }
+            ////if (animalService.GetAnimalById((long)animalId).LifeStatus == lifeStatus.DEATH)
+            ////{
+            ////    return StatusCode(400);
+            ////}
+            if (animalTypesService.GetListTypesOfAnimal((long)animalId) != null)
+            {
+                List<AnimalType> typesThatHaveAnimal = animalTypesService.GetListTypesOfAnimal((long)animalId);
+                if (typesThatHaveAnimal.Any(x => x.Id == typeId))
+                {
+                    return StatusCode(409);
+                }
+            }
 
+            AnimalDTO animalDTO = new AnimalDTO(animalTypesService.AddTypeToAnimal((long)animalId, (long)typeId));
+            animalDTO.VisitedLocations = visitedLocationService.GetVisitedLocationsIDs(animalDTO.Id);
+            animalDTO.AnimalTypes = animalTypesService.GetTypesByAnimalId(animalDTO.Id);
+            return Ok(animalDTO);
         }
+        [Route("animals/{animalId}/types")]
+        [HttpPut] //Ready
+        public ActionResult<AnimalDTO> EditTypeOfAnimal(long? animalId, SwitchableTypes switchableTypes)
+        {
+            if (HttpContext.User.Identity.Name == "guest")
+            {
+                return StatusCode(401);
+            }
+            if (animalId == null || animalId <= 0)
+            {
+                return StatusCode(400);
+            }
+            if (switchableTypes.OldTypeId == null || switchableTypes.OldTypeId <= 0)
+            {
+                return StatusCode(400);
+            }
+            if (switchableTypes.NewTypeId == null || switchableTypes.NewTypeId <= 0)
+            {
+                return StatusCode(400);
+            }
+            if (animalService.GetAnimalById((long)animalId) == null)
+            {
+                return StatusCode(404);
+            }
+            if (animalTypesService.GetType((long)switchableTypes.OldTypeId) == null)
+            {
+                return StatusCode(404);
+            }
+            if (animalTypesService.GetType((long)switchableTypes.NewTypeId) == null)
+            {
+                return StatusCode(404);
+            }
+            if (animalTypesService.GetType((long)switchableTypes.OldTypeId).AnimalId != animalId)
+            {
+                return StatusCode(404);
+            }
+            if (animalTypesService.GetType((long)switchableTypes.NewTypeId).AnimalId != null)
+            {
+                return StatusCode(409);
+            }
+            ////if (animalService.GetAnimalById((long)animalId).LifeStatus == lifeStatus.DEATH)
+            ////{
+            ////    return StatusCode(400);
+            ////}
+
+            AnimalDTO animalDTO = new AnimalDTO(animalTypesService.EditTypeOfAnimal((long)animalId, switchableTypes));
+            animalDTO.VisitedLocations = visitedLocationService.GetVisitedLocationsIDs(animalDTO.Id);
+            animalDTO.AnimalTypes = animalTypesService.GetTypesByAnimalId(animalDTO.Id);
+            return Ok(animalDTO);
+        }
+        [Route("animals/{animalId}/types/{typeId}")]
+        [HttpDelete] //Ready
+        public ActionResult<AnimalDTO> EditTypeOfAnimal(long? animalId, long? typeId)
+        {
+            if (HttpContext.User.Identity.Name == "guest")
+            {
+                return StatusCode(401);
+            }
+            if (animalId == null || animalId <= 0)
+            {
+                return StatusCode(400);
+            }
+            if (typeId == null || typeId <= 0)
+            {
+                return StatusCode(400);
+            }
+            if (animalService.GetAnimalById((long)animalId) == null)
+            {
+                return StatusCode(404);
+            }
+            if (animalTypesService.GetType((long)typeId) == null)
+            {
+                return StatusCode(404);
+            }
+            if (animalTypesService.GetType((long)typeId).AnimalId != animalId)
+            {
+                return StatusCode(404);
+            }
+            if (animalTypesService.GetListTypesOfAnimal((long)animalId).Count() <= 1)
+            {
+                return StatusCode(400);
+            }
+            ////if (animalService.GetAnimalById((long)animalId).LifeStatus == lifeStatus.DEATH)
+            ////{
+            ////    return StatusCode(400);
+            ////}
+            
+            AnimalDTO animalDTO = new AnimalDTO(animalTypesService.DeleteTypeOfAnimal((long)animalId, (long)typeId));
+            animalDTO.VisitedLocations = visitedLocationService.GetVisitedLocationsIDs(animalDTO.Id);
+            animalDTO.AnimalTypes = animalTypesService.GetTypesByAnimalId(animalDTO.Id);
+            return Ok(animalDTO);
+        }
+        //=================================================================================================
+        // ANIMAL TYPE BLOCK
+        //=================================================================================================
+
         [Route("animals/types")]
         [HttpPost]
-        public ActionResult<AnimalType> AddAnimalType([FromBody] string? type) //чекнуть frombody
+        public ActionResult<AnimalTypeDTO> AddAnimalType([FromBody] string? type) //чекнуть frombody
         {
             if (HttpContext.User.Identity.Name == "guest")
             {
@@ -173,16 +360,34 @@ namespace DripChipProject.Controllers
             {
                 return StatusCode(400);
             }
-            if (animalTypesService.GetTypes(type) != null)
+            if (animalTypesService.GetType(type) != null)
             {
                 return StatusCode(409);
             }
-            return Created("", animalTypesService.AddType(type));
+            AnimalTypeDTO animalTypeDTO = new AnimalTypeDTO(animalTypesService.AddType(type));
+            return Created("", animalTypeDTO);
 
         }
         [Route("animals/types/{typeId}")]
+        [HttpGet]
+        public ActionResult<AnimalTypeDTO> GetAnimalType(long? typeId)
+        {
+            if (typeId == null || typeId <= 0)
+            {
+                return StatusCode(400);
+            }
+            if (animalTypesService.GetType((long)typeId) == null)
+            {
+                return StatusCode(404);
+            }
+            AnimalTypeDTO animalTypeDTO = new AnimalTypeDTO(animalTypesService.GetType((long)typeId));
+            return Ok(animalTypeDTO);
+
+        }
+
+        [Route("animals/types/{typeId}")]
         [HttpPut]
-        public ActionResult<AnimalType> EditAnimalType(long? typeId,[FromBody] string? type) //чекнуть frombody
+        public ActionResult<AnimalTypeDTO> EditAnimalType(long? typeId,[FromBody] string? type) //чекнуть frombody
         {
             if (HttpContext.User.Identity.Name == "guest")
             {
@@ -196,20 +401,21 @@ namespace DripChipProject.Controllers
             {
                 return StatusCode(400);
             }
-            if (animalTypesService.GetTypes((long)typeId) == null)
+            if (animalTypesService.GetType((long)typeId) == null)
             {
                 return StatusCode(404);
             }
-            if (animalTypesService.GetTypes(type) != null)
+            if (animalTypesService.GetType(type) != null)
             {
                 return StatusCode(409);
             }
-            return Ok(animalTypesService.EditType((long)typeId, type));
+            AnimalTypeDTO animalType = new AnimalTypeDTO(animalTypesService.EditType((long)typeId, type));
+            return Ok(animalType);
 
         }
         [Route("animals/types/{typeId}")]
         [HttpDelete]
-        public ActionResult<AnimalType> DeleteAnimalType(long? typeId) //чекнуть frombody
+        public ActionResult<AnimalType> DeleteAnimalType([FromBody]long? typeId) //чекнуть frombody
         {
             if (HttpContext.User.Identity.Name == "guest")
             {
@@ -219,7 +425,7 @@ namespace DripChipProject.Controllers
             {
                 return StatusCode(400);
             }
-            if (animalTypesService.GetTypes((long)typeId) == null)
+            if (animalTypesService.GetType((long)typeId) == null)
             {
                 return StatusCode(404);
             }
@@ -231,13 +437,21 @@ namespace DripChipProject.Controllers
             return Ok();
 
         }
+        //=================================================================================================
+        // VISITED LOCATION BLOCK
+        //=================================================================================================
         [Route("animals/{animalId}/locations")]
-        [HttpGet]
-        public ActionResult<AnimalVisitedLocation> GetVistedLocations(long? animalId, [FromQuery] DateTime? startDateTime, [FromQuery] DateTime? endDateTime, [FromQuery] int from = 0, [FromQuery] int size = 10)
+        [HttpGet] //READY
+        public ActionResult<VisitedLocationDTO> GetVistedLocations(long? animalId, [FromQuery] TimeInterval? timeInterval, [FromQuery] int from = 0, [FromQuery] int size = 10)
         {
+            
             if (animalId == null || animalId <= 0)
             {
                 return StatusCode(400);
+            }
+            if (animalService.GetAnimalById((long)animalId) == null)
+            {
+                return StatusCode(404);
             }
             if (from <0)
             {
@@ -247,7 +461,167 @@ namespace DripChipProject.Controllers
             {
                 return StatusCode(400);
             }
-            return Ok(animalService.GetVisitedLocation((long)animalId, startDateTime, endDateTime, from, size));
+            List<VisitedLocationDTO> visitedLocationDTOs = new List<VisitedLocationDTO>();
+            if (animalService.GetVisitedLocation((long)animalId, timeInterval.startDateTime, timeInterval.endDateTime, from, size) != null)
+            {
+                foreach (AnimalVisitedLocation visitedLocation in animalService.GetVisitedLocation((long)animalId, timeInterval.startDateTime, timeInterval.endDateTime, from, size))
+                {
+                    VisitedLocationDTO visitedLocationDTO = new VisitedLocationDTO(visitedLocation);
+                    visitedLocationDTOs.Add(visitedLocationDTO);
+                }
+            }
+            return Ok(visitedLocationDTOs);
+        }
+        [Route("animals/{animalId}/locations/{pointId}")]
+        [HttpPost] //Ready
+        public ActionResult<VisitedLocationDTO> AddVisitedLocation(long? animalId, long? pointId)
+        {
+            if (HttpContext.User.Identity.Name == "guest")
+            {
+                return StatusCode(401);
+            }
+            if (animalId == null || animalId <= 0)
+            {
+                return StatusCode(400);
+            }
+            if (pointId == null || pointId <= 0)
+            {
+                return StatusCode(400);
+            }
+            if (animalService.GetAnimalById((long)animalId) == null)
+            {
+                return StatusCode(404);
+            }
+            if (locationService.GetLocation((long)pointId) == null)
+            {
+                return StatusCode(404);
+            }
+            if (animalService.GetAnimalById((long)animalId).LifeStatus == lifeStatus.DEATH)
+            {
+                return StatusCode(400);
+            }
+            if (animalService.GetAnimalById((long)animalId).ChippingLocationId == pointId && visitedLocationService.GetListVisistedLocationsOfAnimal((long)animalId) == null)
+            {
+                return StatusCode(400);
+            }
+            if (visitedLocationService.GetVisitedLocationsIDs((long)animalId) != null)
+            {
+                foreach (long visitedId in visitedLocationService.GetVisitedLocationsIDs((long)animalId))
+                {
+                    if (pointId == visitedLocationService.GetVisitedLocationsById(visitedId).LocationPointId)
+                    {
+                        return StatusCode(400);
+                    }
+                }
+            }
+            
+            
+            VisitedLocationDTO visitedLocationDTO = new VisitedLocationDTO(visitedLocationService.VisitLocation((long)animalId, (long)pointId));
+            return Ok(visitedLocationDTO);
+        }
+        [Route("animals/{animalId}/locations")]
+        [HttpPut]//READY
+        public ActionResult<VisitedLocationDTO> EditVisitedLocation(long? animalId, [FromBody] VisitedLocationAndLocationId visitedLocationAndLocationId)
+        {
+            if (HttpContext.User.Identity.Name == "guest")
+            {
+                return StatusCode(401);
+            }
+            if (animalId == null || animalId <= 0)
+            {
+                return StatusCode(400);
+            }
+            if (visitedLocationAndLocationId.LocationPointId == null || visitedLocationAndLocationId.LocationPointId <= 0)
+            {
+                return StatusCode(400);
+            }
+            if (visitedLocationAndLocationId.VisitedLocationPointId == null || visitedLocationAndLocationId.VisitedLocationPointId <= 0)
+            {
+                return StatusCode(400);
+            }
+            if (animalService.GetAnimalById((long)animalId) == null)
+            {
+                return StatusCode(404);
+            }
+            if (locationService.GetLocation((long)visitedLocationAndLocationId.LocationPointId) == null)
+            {
+                return StatusCode(404);
+            }
+            //if (animalService.GetAnimalById((long)animalId).LifeStatus == lifeStatus.DEATH)
+            //{
+            //    return StatusCode(400);
+            //}
+            if (!ThisIndexesLocationsExist(animalId, visitedLocationAndLocationId.VisitedLocationPointId, visitedLocationAndLocationId.LocationPointId))
+            {
+                return StatusCode(404);
+            }
+            foreach (long visitedId in visitedLocationService.GetVisitedLocationsIDs((long)animalId))
+            {
+                if (visitedLocationAndLocationId.LocationPointId == visitedLocationService.GetVisitedLocationsById(visitedId).LocationPointId)
+                {
+                    return StatusCode(400);
+                }
+            }
+            if (animalService.GetAnimalById((long)animalId).ChippingLocationId == visitedLocationAndLocationId.LocationPointId && visitedLocationService.GetListVisistedLocationsOfAnimal((long)animalId)[0].Id == visitedLocationAndLocationId.VisitedLocationPointId)
+            {
+                return StatusCode(400);
+            }
+
+            VisitedLocationDTO visitedLocationDTO = new VisitedLocationDTO(visitedLocationService.EditVisitedLocation((long)visitedLocationAndLocationId.VisitedLocationPointId, (long)visitedLocationAndLocationId.LocationPointId));
+            return Ok(visitedLocationDTO);
+        }
+        [Route("animals/{animalId}/locations/{visitedPointId}")]
+        [HttpDelete] //READY
+        public ActionResult<VisitedLocationDTO> DeleteVisitedLocation(long? animalId, long? visitedPointId)
+        {
+            if (HttpContext.User.Identity.Name == "guest")
+            {
+                return StatusCode(401);
+            }
+            if (animalId == null || animalId <= 0)
+            {
+                return StatusCode(400);
+            }
+            if (visitedPointId == null || visitedPointId <= 0)
+            {
+                return StatusCode(400);
+            }
+            if (animalService.GetAnimalById((long)animalId) == null)
+            {
+                return StatusCode(404);
+            }
+            if (!ThisIndexesLocationsExist(animalId, visitedPointId, null))
+            {
+                return StatusCode(404);
+            }
+            visitedLocationService.DeleteVisitedLocation((long)animalId, (long)visitedPointId);
+            if (visitedLocationService.GetListVisistedLocationsOfAnimal((long)animalId) != null)
+            {
+                if (visitedLocationService.GetListVisistedLocationsOfAnimal((long)animalId)[0].LocationPointId == animalService.GetAnimalById((long)animalId).ChippingLocationId)
+                {
+                    visitedLocationService.DeleteVisitedLocation((long)animalId, visitedLocationService.GetListVisistedLocationsOfAnimal((long)animalId)[0].Id);
+                }
+            }
+            return Ok();
+        }
+        private bool ThisIndexesLocationsExist(long? animalId, long? visitedLocationPointId , long? locationPointId)
+        {
+            if (visitedLocationService.GetVisitedLocationsIDs((long)animalId) == null)
+            {
+                return false;
+            }
+            if (visitedLocationService.GetVisitedLocationsById((long)visitedLocationPointId) == null)
+            {
+                return false;
+            }
+            if (locationPointId != null)
+            {
+                if (locationService.GetLocation((long)locationPointId) == null)
+                {
+                    return false;
+                }
+            }
+            return true;
         }
     }
 }
