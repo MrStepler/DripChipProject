@@ -1,0 +1,21 @@
+version: '3.4'
+
+services:
+  dripchipproject:
+    image: ${DOCKER_REGISTRY-}dripchipproject
+    ports:
+      - "8080:80"
+    build:
+      context: .
+      dockerfile: DripChipProject/Dockerfile
+
+  tests: 
+    image: mrexpen/planet_olymp_phase1
+    pull_policy: always
+    ports:
+      - "8090:8080"
+    depends_on:
+      - dripchipproject
+    environment:
+      SERVER_URL: "http://dripchipproject:80"
+      STAGE: all
