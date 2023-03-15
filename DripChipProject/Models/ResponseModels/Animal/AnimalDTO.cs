@@ -46,7 +46,7 @@ namespace DripChipProject.Models.ResponseModels.Animal
             {
                 LifeStatus = "ALIVE";
             }
-            if (animal.LifeStatus == Models.Animal.lifeStatus.DEATH)
+            if (animal.LifeStatus == Models.Animal.lifeStatus.DEAD)
             {
                 LifeStatus = "DEAD";
             }

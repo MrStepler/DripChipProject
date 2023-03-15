@@ -86,5 +86,13 @@ namespace DripChipProject.Services
             dbContext.SaveChanges();
             return dbContext.Animals.First(x=>x.Id == animalId);
         }
+
+        public void DeleteType(long typeId)
+        {
+            using var dbContext = contextFactory.CreateDbContext();
+            var deletableType = dbContext.AnimalTypes.Find(typeId);
+            dbContext.AnimalTypes.Remove(deletableType);
+            dbContext.SaveChanges();
+        }
     }
 }

@@ -9,7 +9,7 @@ namespace DripChipProject.Models
         public enum lifeStatus
         {
             ALIVE,
-            DEATH
+            DEAD
         }
         public enum gender
         {

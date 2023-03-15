@@ -12,9 +12,11 @@ namespace DripChipProject.Controllers
     public class LocationController : Controller
     {
         ILocationService locationService;
-        public LocationController(ILocationService locationService) 
+        IVisitedLocationService visitedLocationService;
+        public LocationController(ILocationService locationService, IVisitedLocationService visitedLocationService) 
         {
             this.locationService = locationService;
+            this.visitedLocationService = visitedLocationService;
         }
         [Route("locations/{pointId}")]
         [HttpGet] //Ready
@@ -99,6 +101,7 @@ namespace DripChipProject.Controllers
             {
                 return StatusCode(404);
             }
+
             locationService.DeleteLocation((long)pointId);
             return Ok();
         }

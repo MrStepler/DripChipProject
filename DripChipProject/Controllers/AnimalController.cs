@@ -41,7 +41,7 @@ namespace DripChipProject.Controllers
         //=================================================================================================
         [Route("animals")]
         [HttpPost]
-        public ActionResult<AnimalDTO> ChipAnimal(CreateAnimal createdAnimal) //I mean ready
+        public ActionResult<AnimalDTO> ChipAnimal(CreateAnimalDTO createdAnimal) //I mean ready
         {
             if (HttpContext.User.Identity.Name == "guest")
             {
@@ -69,7 +69,7 @@ namespace DripChipProject.Controllers
             var duplicates = createdAnimal.AnimalTypes.GroupBy(x => x)
               .Where(g => g.Count() > 1)
               .Select(y => y.Key)
-              .ToList();
+              .ToList();        
             if (duplicates.Count() > 0)
             {
                 return StatusCode(409);
@@ -115,17 +115,129 @@ namespace DripChipProject.Controllers
 
             return Ok(animals);
         }
-        private bool VerifyAddingAnimal(CreateAnimal createdAnimal)
+        [Route("animals/{animalId}")]
+        [HttpPut] //READY
+        public ActionResult<AnimalDTO> ChipAnimal(long? animalId, [FromBody] EditableAnimalDTO editableAnimal)
+        {
+            
+            if (HttpContext.User.Identity.Name == "guest")
+            {
+                return StatusCode(401);
+            }
+            if (animalId == null || animalId <= 0)
+            {
+                return StatusCode(400);
+            }
+            if (animalService.GetAnimalById((long)animalId) == null)
+            {
+                return StatusCode(404);
+            }
+            if (!VerifyEditAnimal(editableAnimal))
+            {
+                return StatusCode(400);
+            }
+            if (animalService.GetAnimalById((long)animalId).LifeStatus == lifeStatus.DEAD && editableAnimal.LifeStatus == "ALIVE")
+            {
+                return StatusCode(400);
+            }
+            if (accountService.GetAccount((int)editableAnimal.ChipperId) == null)
+            {
+                return StatusCode(404);
+            }
+            if (locationService.GetLocation((long)editableAnimal.ChippingLocationId) == null)
+            {
+                return StatusCode(404);
+            }
+            if (visitedLocationService.GetListVisistedLocationsOfAnimal((long)animalId) != null)
+            {
+                if (visitedLocationService.GetListVisistedLocationsOfAnimal((long)animalId)[0].LocationPointId == editableAnimal.ChippingLocationId)
+                {
+                    return StatusCode(400);
+                }
+            }
+            
+            AnimalDTO animalDTO = new AnimalDTO(animalService.EditAnimal((long)animalId, editableAnimal));
+            animalDTO.VisitedLocations = visitedLocationService.GetVisitedLocationsIDs(animalDTO.Id);
+            animalDTO.AnimalTypes = animalTypesService.GetTypesByAnimalId(animalDTO.Id);
+            return Ok(animalDTO);
+        }
+        [Route("animals/{animalId}")]
+        [HttpDelete] //READY
+        public ActionResult<AnimalDTO> DeleteAnimal(long? animalId)
+        {
+            if (HttpContext.User.Identity.Name == "guest")
+            {
+                return StatusCode(401);
+            }
+            if (animalId == null || animalId <= 0)
+            {
+                return StatusCode(400);
+            }
+            if (animalService.GetAnimalById((long)animalId) == null)
+            {
+                return StatusCode(404);
+            }
+            if (visitedLocationService.GetListVisistedLocationsOfAnimal((long)animalId) != null)
+            {
+                if (visitedLocationService.GetListVisistedLocationsOfAnimal((long)animalId)[visitedLocationService.GetListVisistedLocationsOfAnimal((long)animalId).Count()-1].LocationPointId != animalService.GetAnimalById((long)animalId).ChippingLocationId)
+                {
+                    return StatusCode(400);
+                }
+            }
+            animalService.ChipAwayAnimal((long)animalId);
+            return Ok();
+        }
+        private bool VerifyEditAnimal(EditableAnimalDTO editableAnimal)
+        {
+
+            if (editableAnimal.Weight == null || editableAnimal.Weight <= 0)
+            {
+                return false;
+            }
+            if (editableAnimal.Lenght == null || editableAnimal.Lenght <= 0)
+            {
+                return false;
+            }
+            if (editableAnimal.Height == null || editableAnimal.Height <= 0)
+            {
+                return false;
+            }
+            if (editableAnimal.Gender == null || editableAnimal.Gender != "MALE" && editableAnimal.Gender != "FEMALE" && editableAnimal.Gender != "OTHER")
+            {
+                return false;
+            }
+            if (editableAnimal.LifeStatus == null || editableAnimal.LifeStatus != "ALIVE" && editableAnimal.LifeStatus != "DEAD" )
+            {
+                return false;
+            }
+            if (editableAnimal.ChipperId == null || editableAnimal.ChipperId <= 0)
+            {
+                return false;
+            }
+            if (editableAnimal.ChippingLocationId == null || editableAnimal.ChippingLocationId <= 0)
+            {
+                return false;
+            }
+            return true;
+        }
+        private bool VerifyAddingAnimal(CreateAnimalDTO createdAnimal)
         {
             if (createdAnimal.AnimalTypes == null || createdAnimal.AnimalTypes.Count() <= 0)
             {
                 return false;
             }
-            foreach (long idType in createdAnimal.AnimalTypes)
+            if (createdAnimal.AnimalTypes.Count() <= 0)
             {
-                if (idType == null || idType <= 0)
+                return false;
+            }
+            else
+            {
+                foreach (long idType in createdAnimal.AnimalTypes)
                 {
-                    return false;
+                    if (idType == null || idType <= 0)
+                    {
+                        return false;
+                    }
                 }
             }
             if (createdAnimal.Weight == null || createdAnimal.Weight <= 0)
@@ -349,27 +461,27 @@ namespace DripChipProject.Controllers
 
         [Route("animals/types")]
         [HttpPost]
-        public ActionResult<AnimalTypeDTO> AddAnimalType([FromBody] string? type) //чекнуть frombody
+        public ActionResult<AnimalTypeDTO> AddAnimalType([FromBody] AddableType addableType) //чекнуть frombody
         {
             if (HttpContext.User.Identity.Name == "guest")
             {
                 return StatusCode(401);
             }
 
-            if (string.IsNullOrWhiteSpace(type))
+            if (string.IsNullOrWhiteSpace(addableType.type))
             {
                 return StatusCode(400);
             }
-            if (animalTypesService.GetType(type) != null)
+            if (animalTypesService.GetType(addableType.type) != null)
             {
                 return StatusCode(409);
             }
-            AnimalTypeDTO animalTypeDTO = new AnimalTypeDTO(animalTypesService.AddType(type));
+            AnimalTypeDTO animalTypeDTO = new AnimalTypeDTO(animalTypesService.AddType(addableType.type));
             return Created("", animalTypeDTO);
 
         }
         [Route("animals/types/{typeId}")]
-        [HttpGet]
+        [HttpGet] //READY
         public ActionResult<AnimalTypeDTO> GetAnimalType(long? typeId)
         {
             if (typeId == null || typeId <= 0)
@@ -387,7 +499,7 @@ namespace DripChipProject.Controllers
 
         [Route("animals/types/{typeId}")]
         [HttpPut]
-        public ActionResult<AnimalTypeDTO> EditAnimalType(long? typeId,[FromBody] string? type) //чекнуть frombody
+        public ActionResult<AnimalTypeDTO> EditAnimalType(long? typeId,[FromBody] AddableType addableType) //чекнуть frombody
         {
             if (HttpContext.User.Identity.Name == "guest")
             {
@@ -397,7 +509,7 @@ namespace DripChipProject.Controllers
             {
                 return StatusCode(400);
             }
-            if (string.IsNullOrWhiteSpace(type))
+            if (string.IsNullOrWhiteSpace(addableType.type))
             {
                 return StatusCode(400);
             }
@@ -405,17 +517,17 @@ namespace DripChipProject.Controllers
             {
                 return StatusCode(404);
             }
-            if (animalTypesService.GetType(type) != null)
+            if (animalTypesService.GetType(addableType.type) != null)
             {
                 return StatusCode(409);
             }
-            AnimalTypeDTO animalType = new AnimalTypeDTO(animalTypesService.EditType((long)typeId, type));
-            return Ok(animalType);
+            AnimalTypeDTO animalTypeDTO = new AnimalTypeDTO(animalTypesService.EditType((long)typeId, addableType.type));
+            return Ok(animalTypeDTO);
 
         }
         [Route("animals/types/{typeId}")]
         [HttpDelete]
-        public ActionResult<AnimalType> DeleteAnimalType([FromBody]long? typeId) //чекнуть frombody
+        public ActionResult<AnimalType> DeleteAnimalType(long? typeId)
         {
             if (HttpContext.User.Identity.Name == "guest")
             {
@@ -433,7 +545,7 @@ namespace DripChipProject.Controllers
             {
                 return StatusCode(400);
             }
-
+            animalTypesService.DeleteType((long)typeId);
             return Ok();
 
         }
@@ -496,7 +608,7 @@ namespace DripChipProject.Controllers
             {
                 return StatusCode(404);
             }
-            if (animalService.GetAnimalById((long)animalId).LifeStatus == lifeStatus.DEATH)
+            if (animalService.GetAnimalById((long)animalId).LifeStatus == lifeStatus.DEAD)
             {
                 return StatusCode(400);
             }

@@ -1,11 +1,8 @@
-﻿using Microsoft.AspNetCore.Mvc;
-using DripChipProject.Models;
-using System.Text.RegularExpressions;
-using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Authentication;
-using System.Security.Principal;
+﻿using DripChipProject.Models.ResponseModels.Account;
 using DripChipProject.Services.ServiceInterfaces;
-using DripChipProject.Models.ResponseModels.Account;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
+using System.Text.RegularExpressions;
 
 namespace DripChipProject.Controllers
 {
@@ -128,19 +125,19 @@ namespace DripChipProject.Controllers
         {
             const string emailPattern = @"^(?("")(""[^""]+?""@)|(([0-9a-z]((\.(?!\.))|[-!#\$%&'\*\+/=\?\^`\{\}\|~\w])*)(?<=[0-9a-z])@))" +
                 @"(?(\[)(\[(\d{1,3}\.){3}\d{1,3}\])|(([0-9a-z][-\w]*[0-9a-z]*\.)+[a-z0-9]{2,17}))$";
-            if (string.IsNullOrWhiteSpace(account.firstName))
+            if (string.IsNullOrWhiteSpace(account.firstName) || string.IsNullOrEmpty(account.firstName))
             {
                 return false;
             }
-            if (string.IsNullOrWhiteSpace(account.lastName))
+            if (string.IsNullOrWhiteSpace(account.lastName) || string.IsNullOrEmpty(account.lastName))
             {
                 return false;
             }
-            if (string.IsNullOrWhiteSpace(account.password))
+            if (string.IsNullOrWhiteSpace(account.password) || string.IsNullOrEmpty(account.password))
             {
                 return false;
             }
-            if (string.IsNullOrWhiteSpace(account.email) || !Regex.IsMatch(account.email, emailPattern, RegexOptions.IgnoreCase))
+            if (string.IsNullOrWhiteSpace(account.email) || string.IsNullOrEmpty(account.email) || !Regex.IsMatch(account.email, emailPattern, RegexOptions.IgnoreCase))
             {
                 return false;
             }

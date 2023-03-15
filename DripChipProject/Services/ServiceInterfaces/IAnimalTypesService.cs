@@ -10,6 +10,7 @@ namespace DripChipProject.Services.ServiceInterfaces
         List<AnimalType>? GetListTypesOfAnimal(long animalId);
         AnimalType AddType(string type);
         AnimalType EditType(long id, string type);
+        void DeleteType(long typeId);
         long[] GetTypesByAnimalId(long animalId);
         Animal AddTypeToAnimal(long animalId, long typeId);
         Animal EditTypeOfAnimal(long animalId, SwitchableTypes switchableTypes);

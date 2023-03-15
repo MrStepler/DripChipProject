@@ -2,7 +2,7 @@
 
 namespace DripChipProject.Models.ResponseModels.Animal
 {
-    public class CreateAnimal
+    public class CreateAnimalDTO
     {
         public long[]? AnimalTypes { get; set; }
         public float? Weight { get; set; }
