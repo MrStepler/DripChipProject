@@ -3,7 +3,7 @@
     public class EditableAnimalDTO
     {
         public float? Weight { get; set; }
-        public float? Lenght { get; set; }
+        public float? Length { get; set; }
         public float? Height { get; set; }
         public string? Gender { get; set; }
         public string? LifeStatus { get; set; }

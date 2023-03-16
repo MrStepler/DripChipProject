@@ -97,7 +97,7 @@ namespace DripChipProject.Services
             Animal animal = new Animal();
             animal.Weight = (float)createdAnimal.Weight;
             animal.Height = (float)createdAnimal.Height;
-            animal.Lenght = (float)createdAnimal.Lenght;
+            animal.Length = (float)createdAnimal.Length;
             animal.Gender = GenderConverter(createdAnimal.Gender);
             animal.ChipperId = (int)createdAnimal.ChipperId;
             animal.ChippingLocationId = (long)createdAnimal.ChippingLocationId;
@@ -121,7 +121,7 @@ namespace DripChipProject.Services
             var editableAnimal = dbContext.Animals.Find(animalId);
             editableAnimal.Weight = (float)editableAnimalDTO.Weight;
             editableAnimal.Height = (float)editableAnimalDTO.Height;
-            editableAnimal.Lenght = (float)editableAnimalDTO.Lenght;
+            editableAnimal.Length = (float)editableAnimalDTO.Length;
             editableAnimal.Gender = GenderConverter(editableAnimalDTO.Gender);
             if (editableAnimalDTO.LifeStatus == "DEAD" && editableAnimal.LifeStatus != Animal.lifeStatus.DEAD)
             {

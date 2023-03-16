@@ -11,7 +11,7 @@ namespace DripChipProject.Models.ResponseModels.Animal
         public long Id { get; set; }
         public long[]? AnimalTypes { get; set; }
         public float Weight { get; set; }
-        public float Lenght { get; set; }
+        public float Length { get; set; }
         public float Height { get; set; }
         public string Gender { get; set; }
         public string LifeStatus { get; set; }
@@ -28,7 +28,7 @@ namespace DripChipProject.Models.ResponseModels.Animal
         {
             Id = animal.Id;
             Weight = animal.Weight;
-            Lenght = animal.Lenght;
+            Length = animal.Length;
             Height = animal.Height;
             if (animal.Gender == Models.Animal.gender.FEMALE)
             {

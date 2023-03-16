@@ -34,19 +34,27 @@ namespace DripChipProject.Controllers
         }
         [Route("accounts/search")]
         [HttpGet] //Ready
-        public IActionResult SearchAccount([FromQuery] string? firstName, [FromQuery] string? lastName, [FromQuery] string? email, [FromQuery] int from = 0, [FromQuery] int size = 10)
+        public IActionResult SearchAccount([FromQuery] string? firstName, [FromQuery] string? lastName, [FromQuery] string? email, [FromQuery] int? from = 0, [FromQuery] int? size = 10)
         {
             if (from < 0)
             {
                 return StatusCode(400);
             }
+            if (from == null)
+            {
+                from = 0;
+            }
+            if (size == null)
+            {
+                size = 10;
+            }
             if (size <= 0)
             {
                 return StatusCode(400);
             }
-            return Ok(accountService.SearchAccounts(firstName, lastName, email, from, size));
+            return Ok(accountService.SearchAccounts(firstName, lastName, email, (int)from, (int)size));
         }
-        [Route("accounts/register")]
+        [Route("registration")]
         [HttpPost]
         public IActionResult RegisterAccount(AccountRegistrationDTO account) //Ready
         {
@@ -73,16 +81,16 @@ namespace DripChipProject.Controllers
             {
                 return StatusCode(401);
             }
-            
-            if (accountService.GetAccount((int)accountId).email != HttpContext.User.Identity.Name)
-            {
-                return StatusCode(403);
-            }
             if (accountService.GetAccount((int)accountId) == null)
             {
                 return StatusCode(403);
             }
-            if (accountService.GetAccountByEmail(account.email) != null) //????????????????
+            if (accountService.GetAccount((int)accountId).email != HttpContext.User.Identity.Name)
+            {
+                return StatusCode(403);
+            }
+            
+            if (accountService.GetAccountByEmail(account.email) != null && accountService.GetAccount((int)accountId).email != account.email) //????????????????
             {
                 return StatusCode(409);
             }

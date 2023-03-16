@@ -81,7 +81,7 @@ namespace DripChipProject.Controllers
         }
         [Route("animals/search")]
         [HttpGet]
-        public ActionResult<Animal> SearchAnimal([FromQuery] TimeInterval interval, [FromQuery] int? chipperId, [FromQuery] long? chippingLocationId, [FromQuery] string? lifeStatus, [FromQuery] string? gender, [FromQuery] int from = 0, [FromQuery] int size = 10)
+        public ActionResult<Animal> SearchAnimal([FromQuery] TimeInterval interval, [FromQuery] int? chipperId, [FromQuery] long? chippingLocationId, [FromQuery] string? lifeStatus, [FromQuery] string? gender, [FromQuery] int? from = 0, [FromQuery] int? size = 10)
         {
 
             if (from < 0)
@@ -91,6 +91,14 @@ namespace DripChipProject.Controllers
             if (size <= 0)
             {
                 return StatusCode(400);
+            }
+            if (from == null)
+            {
+                from = 0;
+            }
+            if (size == null)
+            {
+                size = 10;
             }
             if (!ModelState.IsValid)
             {
@@ -102,9 +110,9 @@ namespace DripChipProject.Controllers
             }
 
             List<AnimalDTO> animals = new List<AnimalDTO>();
-            if (animalService.SearchAnimal(interval.startDateTime, interval.endDateTime, chipperId, chippingLocationId, lifeStatus, gender, from, size) != null)
+            if (animalService.SearchAnimal(interval.startDateTime, interval.endDateTime, chipperId, chippingLocationId, lifeStatus, gender, (int)from, (int)size) != null)
             {
-                foreach (Animal animal in animalService.SearchAnimal(interval.startDateTime, interval.endDateTime, chipperId, chippingLocationId, lifeStatus, gender, from, size))
+                foreach (Animal animal in animalService.SearchAnimal(interval.startDateTime, interval.endDateTime, chipperId, chippingLocationId, lifeStatus, gender, (int)from, (int)size))
                 {
                     AnimalDTO animalDTO = new AnimalDTO(animal);
                     animalDTO.VisitedLocations = visitedLocationService.GetVisitedLocationsIDs(animalDTO.Id);
@@ -194,7 +202,7 @@ namespace DripChipProject.Controllers
             {
                 return false;
             }
-            if (editableAnimal.Lenght == null || editableAnimal.Lenght <= 0)
+            if (editableAnimal.Length == null || editableAnimal.Length <= 0)
             {
                 return false;
             }
@@ -244,7 +252,7 @@ namespace DripChipProject.Controllers
             {
                 return false;
             }
-            if (createdAnimal.Lenght == null || createdAnimal.Lenght <= 0)
+            if (createdAnimal.Length == null || createdAnimal.Length <= 0)
             {
                 return false;
             }
@@ -252,7 +260,7 @@ namespace DripChipProject.Controllers
             {
                 return false;
             }
-            if (createdAnimal.Gender == null || createdAnimal.Gender != "MALE" && createdAnimal.Gender != "FEMALE" && createdAnimal.Gender != "OTHER" )
+            if (createdAnimal.Gender == null || (createdAnimal.Gender != "MALE" && createdAnimal.Gender != "FEMALE" && createdAnimal.Gender != "OTHER" ))
             {
                 return false;
             }
@@ -361,7 +369,7 @@ namespace DripChipProject.Controllers
             AnimalDTO animalDTO = new AnimalDTO(animalTypesService.AddTypeToAnimal((long)animalId, (long)typeId));
             animalDTO.VisitedLocations = visitedLocationService.GetVisitedLocationsIDs(animalDTO.Id);
             animalDTO.AnimalTypes = animalTypesService.GetTypesByAnimalId(animalDTO.Id);
-            return Ok(animalDTO);
+            return Created("", animalDTO);
         }
         [Route("animals/{animalId}/types")]
         [HttpPut] //Ready
@@ -461,7 +469,7 @@ namespace DripChipProject.Controllers
 
         [Route("animals/types")]
         [HttpPost]
-        public ActionResult<AnimalTypeDTO> AddAnimalType([FromBody] AddableType addableType) //чекнуть frombody
+        public ActionResult<AnimalTypeDTO> AddAnimalType([FromBody] AddableType addableType) 
         {
             if (HttpContext.User.Identity.Name == "guest")
             {
@@ -499,7 +507,7 @@ namespace DripChipProject.Controllers
 
         [Route("animals/types/{typeId}")]
         [HttpPut]
-        public ActionResult<AnimalTypeDTO> EditAnimalType(long? typeId,[FromBody] AddableType addableType) //чекнуть frombody
+        public ActionResult<AnimalTypeDTO> EditAnimalType(long? typeId,[FromBody] AddableType addableType) 
         {
             if (HttpContext.User.Identity.Name == "guest")
             {
@@ -554,7 +562,7 @@ namespace DripChipProject.Controllers
         //=================================================================================================
         [Route("animals/{animalId}/locations")]
         [HttpGet] //READY
-        public ActionResult<VisitedLocationDTO> GetVistedLocations(long? animalId, [FromQuery] TimeInterval? timeInterval, [FromQuery] int from = 0, [FromQuery] int size = 10)
+        public ActionResult<VisitedLocationDTO> GetVistedLocations(long? animalId, [FromQuery] TimeInterval? timeInterval, [FromQuery] int? from = 0, [FromQuery] int? size = 10)
         {
             
             if (animalId == null || animalId <= 0)
@@ -573,10 +581,18 @@ namespace DripChipProject.Controllers
             {
                 return StatusCode(400);
             }
-            List<VisitedLocationDTO> visitedLocationDTOs = new List<VisitedLocationDTO>();
-            if (animalService.GetVisitedLocation((long)animalId, timeInterval.startDateTime, timeInterval.endDateTime, from, size) != null)
+            if (from == null)
             {
-                foreach (AnimalVisitedLocation visitedLocation in animalService.GetVisitedLocation((long)animalId, timeInterval.startDateTime, timeInterval.endDateTime, from, size))
+                from = 0;
+            }
+            if (size == null)
+            {
+                size = 10;
+            }
+            List<VisitedLocationDTO> visitedLocationDTOs = new List<VisitedLocationDTO>();
+            if (animalService.GetVisitedLocation((long)animalId, timeInterval.startDateTime, timeInterval.endDateTime, (int)from, (int)size) != null)
+            {
+                foreach (AnimalVisitedLocation visitedLocation in animalService.GetVisitedLocation((long)animalId, timeInterval.startDateTime, timeInterval.endDateTime, (int)from, (int)size))
                 {
                     VisitedLocationDTO visitedLocationDTO = new VisitedLocationDTO(visitedLocation);
                     visitedLocationDTOs.Add(visitedLocationDTO);
@@ -629,7 +645,7 @@ namespace DripChipProject.Controllers
             
             
             VisitedLocationDTO visitedLocationDTO = new VisitedLocationDTO(visitedLocationService.VisitLocation((long)animalId, (long)pointId));
-            return Ok(visitedLocationDTO);
+            return Created("",visitedLocationDTO);
         }
         [Route("animals/{animalId}/locations")]
         [HttpPut]//READY

@@ -22,7 +22,7 @@ namespace DripChipProject.Models
         public long Id { get; set; }
         public ICollection<AnimalType> AnimalTypes { get; set; }
         public float Weight { get; set; }
-        public float Lenght { get; set; }
+        public float Length { get; set; }
         public float Height { get; set; }
         public gender Gender { get; set; } 
         public lifeStatus LifeStatus { get; set; }
