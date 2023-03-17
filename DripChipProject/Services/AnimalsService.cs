@@ -6,6 +6,7 @@ using DripChipProject.Services.ServiceInterfaces;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Internal;
+using System.Globalization;
 using System.Linq;
 using static Microsoft.EntityFrameworkCore.DbLoggerCategory;
 
@@ -34,11 +35,11 @@ namespace DripChipProject.Services
             var searchedAnimals = dbContext.Animals.AsQueryable();
             if (startDateTime != null)
             {
-                 searchedAnimals = searchedAnimals.Where(x => x.ChippingDateTime > startDateTime);
+                 searchedAnimals = searchedAnimals.Where(x => DateTime.Parse(x.ChippingDateTime,CultureInfo.InvariantCulture) > startDateTime);
             }
             if (endDateTime != null)
             {
-                searchedAnimals = searchedAnimals.Where(x => x.ChippingDateTime < endDateTime);
+                searchedAnimals = searchedAnimals.Where(x => DateTime.Parse(x.ChippingDateTime, CultureInfo.InvariantCulture) < endDateTime);
             }
             if (chipperId != null)
             {
@@ -69,11 +70,11 @@ namespace DripChipProject.Services
             var LocationIndexes = dbContext.VisitedLocations.Where(x => x.Animal.Id == animalId);
             if (startDateTime != null)
             {
-                LocationIndexes = LocationIndexes.Where(x => x.DateTimeOfVisitLocationPoint > startDateTime);
+                LocationIndexes = LocationIndexes.Where(x => DateTime.Parse(x.DateTimeOfVisitLocationPoint, CultureInfo.InvariantCulture) > startDateTime);
             }
             if (endDateTime != null)
             {
-                LocationIndexes = LocationIndexes.Where(x => x.DateTimeOfVisitLocationPoint < endDateTime);
+                LocationIndexes = LocationIndexes.Where(x => DateTime.Parse(x.DateTimeOfVisitLocationPoint, CultureInfo.InvariantCulture) < endDateTime);
             }
             return LocationIndexes.Skip(from).Take(size).ToArray();
 
@@ -90,6 +91,15 @@ namespace DripChipProject.Services
             }
             return true;
         }
+        public List<Animal>? GetAnimalsByPointId(long pointId)
+        {
+            using var dbContext = contextFactory.CreateDbContext();
+            if (dbContext.Animals.Any(x => x.ChippingLocationId == pointId))
+            {
+                return null;
+            }
+            return dbContext.Animals.Where(x=>x.ChippingLocationId == pointId).ToList();
+        }
 
         public Animal ChipAnimal(CreateAnimalDTO createdAnimal) // MAYBE READY
         {
@@ -102,7 +112,7 @@ namespace DripChipProject.Services
             animal.ChipperId = (int)createdAnimal.ChipperId;
             animal.ChippingLocationId = (long)createdAnimal.ChippingLocationId;
             animal.LifeStatus = Animal.lifeStatus.ALIVE;
-            animal.ChippingDateTime = DateTime.Now;
+            animal.ChippingDateTime = DateTime.Now.ToString("O");
             animal.DeathDateTime = null;
             animal.VisitedLocations = new List<AnimalVisitedLocation>();
             foreach (long typeAnimalInd in createdAnimal.AnimalTypes)
@@ -125,7 +135,7 @@ namespace DripChipProject.Services
             editableAnimal.Gender = GenderConverter(editableAnimalDTO.Gender);
             if (editableAnimalDTO.LifeStatus == "DEAD" && editableAnimal.LifeStatus != Animal.lifeStatus.DEAD)
             {
-                editableAnimal.DeathDateTime = DateTime.Now;
+                editableAnimal.DeathDateTime = DateTime.Now.ToString("O");
             }
             editableAnimal.LifeStatus = LifeStatusConverter(editableAnimalDTO.LifeStatus);
             editableAnimal.ChipperId = (int)editableAnimalDTO.ChipperId;

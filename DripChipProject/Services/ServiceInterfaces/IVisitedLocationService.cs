@@ -9,6 +9,7 @@ namespace DripChipProject.Services.ServiceInterfaces
         AnimalVisitedLocation? GetVisitedLocationsById(long visitedPointId);
         AnimalVisitedLocation EditVisitedLocation(long visitedPointId, long newPointId);
         List<AnimalVisitedLocation>? GetListVisistedLocationsOfAnimal(long animalId);
+        List<AnimalVisitedLocation>? GetListVisistedLocationsByPointId(long pointId);
         void DeleteVisitedLocation(long animalId, long visitedPointId);
     }
 }

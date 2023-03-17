@@ -115,9 +115,9 @@ namespace DripChipProject.Controllers
                 foreach (Animal animal in animalService.SearchAnimal(interval.startDateTime, interval.endDateTime, chipperId, chippingLocationId, lifeStatus, gender, (int)from, (int)size))
                 {
                     AnimalDTO animalDTO = new AnimalDTO(animal);
-                    animalDTO.VisitedLocations = visitedLocationService.GetVisitedLocationsIDs(animalDTO.Id);
-                    animalDTO.AnimalTypes = animalTypesService.GetTypesByAnimalId(animalDTO.Id);
-                    animals.Add(animalDTO); // Что то случилось с форматом ISO
+                    animalDTO.VisitedLocations = visitedLocationService.GetVisitedLocationsIDs(animal.Id);
+                    animalDTO.AnimalTypes = animalTypesService.GetTypesByAnimalId(animal.Id);
+                    animals.Add(animalDTO); 
                 }
             }
 
@@ -165,8 +165,8 @@ namespace DripChipProject.Controllers
             }
             
             AnimalDTO animalDTO = new AnimalDTO(animalService.EditAnimal((long)animalId, editableAnimal));
-            animalDTO.VisitedLocations = visitedLocationService.GetVisitedLocationsIDs(animalDTO.Id);
-            animalDTO.AnimalTypes = animalTypesService.GetTypesByAnimalId(animalDTO.Id);
+            animalDTO.VisitedLocations = visitedLocationService.GetVisitedLocationsIDs((long)animalId);
+            animalDTO.AnimalTypes = animalTypesService.GetTypesByAnimalId((long)animalId);
             return Ok(animalDTO);
         }
         [Route("animals/{animalId}")]
@@ -321,8 +321,8 @@ namespace DripChipProject.Controllers
                 return StatusCode(404);
             }
             AnimalDTO animalDTO = new AnimalDTO(animalService.GetAnimalById((long)animalId));
-            animalDTO.VisitedLocations = visitedLocationService.GetVisitedLocationsIDs(animalDTO.Id);
-            animalDTO.AnimalTypes = animalTypesService.GetTypesByAnimalId(animalDTO.Id);
+            animalDTO.VisitedLocations = visitedLocationService.GetVisitedLocationsIDs((long)animalId);
+            animalDTO.AnimalTypes = animalTypesService.GetTypesByAnimalId((long)animalId);
             return Ok(animalDTO);
            
         }
@@ -735,6 +735,10 @@ namespace DripChipProject.Controllers
         private bool ThisIndexesLocationsExist(long? animalId, long? visitedLocationPointId , long? locationPointId)
         {
             if (visitedLocationService.GetVisitedLocationsIDs((long)animalId) == null)
+            {
+                return false;
+            }
+            if (visitedLocationService.GetListVisistedLocationsOfAnimal((long)animalId).Where(x => x.Id == visitedLocationPointId) == null)
             {
                 return false;
             }

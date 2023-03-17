@@ -13,10 +13,12 @@ namespace DripChipProject.Controllers
     {
         ILocationService locationService;
         IVisitedLocationService visitedLocationService;
-        public LocationController(ILocationService locationService, IVisitedLocationService visitedLocationService) 
+        IAnimalsService animalsService;
+        public LocationController(ILocationService locationService, IVisitedLocationService visitedLocationService, IAnimalsService animalsService) 
         {
             this.locationService = locationService;
             this.visitedLocationService = visitedLocationService;
+            this.animalsService = animalsService;
         }
         [Route("locations/{pointId}")]
         [HttpGet] //Ready
@@ -93,13 +95,21 @@ namespace DripChipProject.Controllers
             {
                 return StatusCode(401);
             }
-            if (pointId == null || pointId <= 0) //Связка с животным????????????????
+            if (pointId == null || pointId <= 0) 
             {
                 return StatusCode(400);
             }
             if (locationService.GetLocation((long)pointId) == null)
             {
                 return StatusCode(404);
+            }
+            if (visitedLocationService.GetListVisistedLocationsByPointId((long)pointId) != null)
+            {
+                return StatusCode(400);
+            }
+            if (animalsService.GetAnimalsByPointId((long)pointId) != null )
+            {
+                return StatusCode(400);
             }
 
             locationService.DeleteLocation((long)pointId);

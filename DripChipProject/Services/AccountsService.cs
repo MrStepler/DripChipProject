@@ -4,6 +4,7 @@ using Microsoft.EntityFrameworkCore;
 using System.Linq;
 using DripChipProject.Services.ServiceInterfaces;
 using DripChipProject.Models.ResponseModels.Account;
+using System.Text.RegularExpressions;
 
 namespace DripChipProject.Services
 {
@@ -42,7 +43,7 @@ namespace DripChipProject.Services
             return account;
         }
 
-        public void DeleteAccount(int id) // Доработать
+        public void DeleteAccount(int id)
         {
             using var dbContext = contextFactory.CreateDbContext();
             var accountToDeleting = dbContext.Accounts.First(x =>x.Id == id);
@@ -86,15 +87,15 @@ namespace DripChipProject.Services
             var filteredResult = dbContext.Accounts.AsQueryable();
             if (firstName != null)
             {
-                filteredResult = filteredResult.Where(x =>x.FirstName == firstName);
+                filteredResult = filteredResult.Where(x => x.FirstName.ToLower().Contains(firstName.ToLower()));
             }
             if (lastName != null)
             {
-                filteredResult = filteredResult.Where(x => x.LastName == lastName);
+                filteredResult = filteredResult.Where(x => x.LastName.ToLower().Contains(lastName.ToLower()));
             }
             if (email != null)
             {
-                filteredResult = filteredResult.Where(x => x.Email == email);
+                filteredResult = filteredResult.Where(x => x.Email.ToLower().Contains(email.ToLower()));
             }
             if (filteredResult.Count() == 0)
             {

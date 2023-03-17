@@ -15,15 +15,11 @@ namespace DripChipProject.Models.ResponseModels.Animal
         public float Height { get; set; }
         public string Gender { get; set; }
         public string LifeStatus { get; set; }
-        [DataType(DataType.Date)]
-        [DisplayFormat(DataFormatString = "{0:yyyy-MM-ddTHH:mm:ssZ}", ApplyFormatInEditMode = true)]
-        public DateTime ChippingDateTime { get; set; }
+        public string ChippingDateTime { get; set; }
         public int ChipperId { get; set; }
         public long ChippingLocationId { get; set; }
         public long[]? VisitedLocations { get; set; }
-        [DataType(DataType.Date)]
-        [DisplayFormat(DataFormatString = "{0:yyyy-MM-ddTHH:mm:ssZ}", ApplyFormatInEditMode = true)]
-        public DateTime? DeathDateTime { get; set; }
+        public string? DeathDateTime { get; set; }
         public AnimalDTO(Models.Animal animal)
         {
             Id = animal.Id;

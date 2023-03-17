@@ -13,6 +13,7 @@ namespace DripChipProject.Services.ServiceInterfaces
         Animal[]? SearchAnimal(DateTime? startDateTime, DateTime? endDateTime, int? chipperId, long? chippingLocationId, string? lifeStatus, string? gender, int from, int size);
         AnimalVisitedLocation[]? GetVisitedLocation(long animalId, DateTime? startDateTime, DateTime? endDateTime, int from, int size);
         Animal EditAnimal(long animalId, EditableAnimalDTO editableAnimalDTO);
+        List<Animal>? GetAnimalsByPointId(long pointId);
         void ChipAwayAnimal(long animalId);
     }
 

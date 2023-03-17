@@ -31,6 +31,15 @@ namespace DripChipProject.Services
             }
             return dbContext.VisitedLocations.Where(x => x.animalID == animalId).OrderBy(x =>x.Id).ToList();
         }
+        public List<AnimalVisitedLocation>? GetListVisistedLocationsByPointId(long pointId)
+        {
+            using var dbContext = contextFactory.CreateDbContext();
+            if (!dbContext.VisitedLocations.Any(x => x.LocationPointId == pointId))
+            {
+                return null;
+            }
+            return dbContext.VisitedLocations.Where(x => x.LocationPointId == pointId).OrderBy(x => x.Id).ToList();
+        }
         public AnimalVisitedLocation? GetVisitedLocationsById(long visitedPointId)
         {
             using var dbContext = contextFactory.CreateDbContext();
@@ -53,13 +62,13 @@ namespace DripChipProject.Services
             using var dbContext = contextFactory.CreateDbContext();
             AnimalVisitedLocation visitedLocation = new AnimalVisitedLocation();
             visitedLocation.LocationPointId = pointId;
-            visitedLocation.DateTimeOfVisitLocationPoint = DateTime.Now;
+            visitedLocation.DateTimeOfVisitLocationPoint = DateTime.Now.ToString("O");
             visitedLocation.Animal = dbContext.Animals.First(x => x.Id == animalId);
             dbContext.VisitedLocations.Add(visitedLocation);
             dbContext.SaveChanges();
             return visitedLocation;
         }
-        public void DeleteVisitedLocation(long animalId, long visitedPointId)
+        public void DeleteVisitedLocation(long animalId, long visitedPointId) //kdafldjvgdldkdvgnhidlxshgfvlxdck
         {
             using var dbContext = contextFactory.CreateDbContext();
             var deletableVisitedPoint = dbContext.VisitedLocations.FirstOrDefault(x=>x.Id == visitedPointId && x.animalID ==animalId);
